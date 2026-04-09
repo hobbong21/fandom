@@ -45,10 +45,10 @@ export default function NotificationsScreen() {
           { paddingTop: isWeb ? 67 : insets.top + 12 },
         ]}
       >
-        <Text style={styles.title}>Notifications</Text>
+        <Text style={styles.title}>알림</Text>
         {unreadCount > 0 && (
           <Pressable style={styles.markAllBtn} onPress={markAllRead}>
-            <Text style={styles.markAllText}>Mark all read</Text>
+            <Text style={styles.markAllText}>전체 읽음 처리</Text>
           </Pressable>
         )}
       </View>
@@ -91,8 +91,8 @@ export default function NotificationsScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Feather name="bell" size={40} color={colors.mutedForeground} />
-            <Text style={styles.emptyTitle}>All caught up!</Text>
-            <Text style={styles.emptyText}>No new notifications</Text>
+            <Text style={styles.emptyTitle}>모두 읽었습니다!</Text>
+            <Text style={styles.emptyText}>새로운 알림이 없습니다</Text>
           </View>
         }
       />

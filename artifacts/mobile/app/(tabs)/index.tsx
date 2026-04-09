@@ -16,19 +16,19 @@ import { PostCard } from "@/components/PostCard";
 import { useFandom } from "@/context/FandomContext";
 import { useColors } from "@/hooks/useColors";
 
-const FEED_FILTERS = ["For You", "Following", "Trending"];
+const FEED_FILTERS = ["추천", "팔로잉", "인기"];
 
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { posts, fandoms, followedFandomIds } = useFandom();
-  const [activeFilter, setActiveFilter] = useState("For You");
+  const [activeFilter, setActiveFilter] = useState("추천");
 
   const featuredFandoms = fandoms.slice(0, 4);
   const isWeb = Platform.OS === "web";
 
   const filteredPosts =
-    activeFilter === "Following"
+    activeFilter === "팔로잉"
       ? posts.filter((p) => followedFandomIds.includes(p.fandomId))
       : posts;
 
@@ -42,7 +42,7 @@ export default function HomeScreen() {
           { paddingTop: isWeb ? 67 : insets.top + 12 },
         ]}
       >
-        <Text style={styles.logo}>Fandom</Text>
+        <Text style={styles.logo}>팬덤</Text>
         <Pressable style={styles.searchBtn} onPress={() => router.push("/explore")}>
           <Feather name="search" size={20} color={colors.foreground} />
         </Pressable>
@@ -96,10 +96,10 @@ export default function HomeScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Feather name="rss" size={40} color={colors.mutedForeground} />
-            <Text style={styles.emptyTitle}>Nothing here yet</Text>
-            <Text style={styles.emptyText}>Join some fandoms to see posts in your feed</Text>
+            <Text style={styles.emptyTitle}>아직 게시글이 없습니다</Text>
+            <Text style={styles.emptyText}>팬덤에 가입하여 피드를 채워보세요</Text>
             <Pressable style={styles.exploreBtn} onPress={() => router.push("/explore")}>
-              <Text style={styles.exploreBtnText}>Explore Fandoms</Text>
+              <Text style={styles.exploreBtnText}>팬덤 탐색하기</Text>
             </Pressable>
           </View>
         }

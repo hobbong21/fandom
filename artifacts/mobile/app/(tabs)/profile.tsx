@@ -1,8 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  Alert,
-  FlatList,
   Platform,
   Pressable,
   ScrollView,
@@ -17,13 +15,13 @@ import { PostCard } from "@/components/PostCard";
 import { useFandom } from "@/context/FandomContext";
 import { useColors } from "@/hooks/useColors";
 
-const PROFILE_TABS = ["Posts", "Saved", "Fandoms"];
+const PROFILE_TABS = ["게시글", "저장됨", "팬덤"];
 
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { posts, fandoms, followedFandomIds, savedPosts, userProfile, updateProfile } = useFandom();
-  const [activeTab, setActiveTab] = useState("Posts");
+  const [activeTab, setActiveTab] = useState("게시글");
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(userProfile.name);
   const [editBio, setEditBio] = useState(userProfile.bio);
@@ -52,7 +50,7 @@ export default function ProfileScreen() {
           { paddingTop: isWeb ? 67 : insets.top + 12 },
         ]}
       >
-        <Text style={styles.title}>Profile</Text>
+        <Text style={styles.title}>프로필</Text>
         <Pressable
           style={styles.settingsBtn}
           onPress={() => setEditing((e) => !e)}
@@ -74,19 +72,19 @@ export default function ProfileScreen() {
               style={[styles.editInput, { color: colors.foreground, borderColor: colors.border }]}
               value={editName}
               onChangeText={setEditName}
-              placeholder="Display name"
+              placeholder="닉네임"
               placeholderTextColor={colors.mutedForeground}
             />
             <TextInput
               style={[styles.editInput, styles.editBio, { color: colors.foreground, borderColor: colors.border }]}
               value={editBio}
               onChangeText={setEditBio}
-              placeholder="Bio"
+              placeholder="자기소개"
               placeholderTextColor={colors.mutedForeground}
               multiline
             />
             <Pressable style={styles.saveBtn} onPress={handleSaveProfile}>
-              <Text style={styles.saveBtnText}>Save Profile</Text>
+              <Text style={styles.saveBtnText}>프로필 저장</Text>
             </Pressable>
           </View>
         ) : (
@@ -100,15 +98,15 @@ export default function ProfileScreen() {
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>{userProfile.postCount}</Text>
-            <Text style={styles.statLabel}>Posts</Text>
+            <Text style={styles.statLabel}>게시글</Text>
           </View>
           <View style={[styles.statBox, styles.statBoxBorder]}>
             <Text style={styles.statValue}>{userProfile.followerCount.toLocaleString()}</Text>
-            <Text style={styles.statLabel}>Followers</Text>
+            <Text style={styles.statLabel}>팔로워</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>{userProfile.followingCount}</Text>
-            <Text style={styles.statLabel}>Following</Text>
+            <Text style={styles.statLabel}>팔로잉</Text>
           </View>
         </View>
       </View>
@@ -128,35 +126,35 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.tabContent}>
-        {activeTab === "Posts" && (
+        {activeTab === "게시글" && (
           myPosts.length > 0 ? (
             myPosts.map((p) => <PostCard key={p.id} post={p} compact />)
           ) : (
             <View style={styles.empty}>
               <Feather name="file-text" size={36} color={colors.mutedForeground} />
-              <Text style={styles.emptyText}>No posts yet</Text>
+              <Text style={styles.emptyText}>아직 게시글이 없습니다</Text>
             </View>
           )
         )}
 
-        {activeTab === "Saved" && (
+        {activeTab === "저장됨" && (
           mySaved.length > 0 ? (
             mySaved.map((p) => <PostCard key={p.id} post={p} compact />)
           ) : (
             <View style={styles.empty}>
               <Feather name="bookmark" size={36} color={colors.mutedForeground} />
-              <Text style={styles.emptyText}>No saved posts</Text>
+              <Text style={styles.emptyText}>저장된 게시글이 없습니다</Text>
             </View>
           )
         )}
 
-        {activeTab === "Fandoms" && (
+        {activeTab === "팬덤" && (
           myFandoms.length > 0 ? (
             myFandoms.map((f) => <FandomCard key={f.id} fandom={f} />)
           ) : (
             <View style={styles.empty}>
               <Feather name="star" size={36} color={colors.mutedForeground} />
-              <Text style={styles.emptyText}>No fandoms followed yet</Text>
+              <Text style={styles.emptyText}>아직 가입한 팬덤이 없습니다</Text>
             </View>
           )
         )}

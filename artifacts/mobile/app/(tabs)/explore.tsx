@@ -44,13 +44,13 @@ export default function ExploreScreen() {
           { paddingTop: isWeb ? 67 : insets.top + 12 },
         ]}
       >
-        <Text style={styles.title}>Explore</Text>
-        <Text style={styles.subtitle}>Discover communities</Text>
+        <Text style={styles.title}>탐색</Text>
+        <Text style={styles.subtitle}>커뮤니티를 찾아보세요</Text>
         <View style={styles.searchBar}>
           <Feather name="search" size={18} color={colors.mutedForeground} />
           <TextInput
             style={[styles.searchInput, { color: colors.foreground }]}
-            placeholder="Search fandoms..."
+            placeholder="팬덤 검색..."
             placeholderTextColor={colors.mutedForeground}
             value={search}
             onChangeText={setSearch}
@@ -103,8 +103,8 @@ export default function ExploreScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Feather name="compass" size={40} color={colors.mutedForeground} />
-            <Text style={styles.emptyTitle}>No fandoms found</Text>
-            <Text style={styles.emptyText}>Try a different search or category</Text>
+            <Text style={styles.emptyTitle}>팬덤을 찾을 수 없습니다</Text>
+            <Text style={styles.emptyText}>다른 검색어 또는 카테고리를 시도해보세요</Text>
           </View>
         }
       />

@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
   FlatList,
   Image,
@@ -22,6 +22,16 @@ function formatCount(n: number): string {
   return n.toString();
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  anime: "애니메이션",
+  gaming: "게임",
+  fantasy: "판타지",
+  movies: "영화",
+  tv: "TV 드라마",
+  comics: "만화",
+  music: "음악",
+};
+
 export default function FandomDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const colors = useColors();
@@ -36,7 +46,7 @@ export default function FandomDetailScreen() {
   if (!fandom) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={styles.notFound}>Fandom not found</Text>
+        <Text style={styles.notFound}>팬덤을 찾을 수 없습니다</Text>
       </View>
     );
   }
@@ -66,7 +76,9 @@ export default function FandomDetailScreen() {
             </Pressable>
             <View style={[styles.heroContent, { bottom: 20 }]}>
               <View style={styles.categoryBadge}>
-                <Text style={styles.categoryText}>{fandom.category.toUpperCase()}</Text>
+                <Text style={styles.categoryText}>
+                  {CATEGORY_LABELS[fandom.category] ?? fandom.category}
+                </Text>
               </View>
               <Text style={styles.heroName}>{fandom.name}</Text>
             </View>
@@ -76,15 +88,15 @@ export default function FandomDetailScreen() {
             <View style={styles.statsRow}>
               <View style={styles.statBox}>
                 <Text style={styles.statValue}>{formatCount(fandom.memberCount)}</Text>
-                <Text style={styles.statLabel}>Members</Text>
+                <Text style={styles.statLabel}>멤버</Text>
               </View>
               <View style={[styles.statBox, { borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.border }]}>
                 <Text style={styles.statValue}>{formatCount(fandom.postCount)}</Text>
-                <Text style={styles.statLabel}>Posts</Text>
+                <Text style={styles.statLabel}>게시글</Text>
               </View>
               <View style={styles.statBox}>
                 <Text style={styles.statValue}>{fandom.tags.length}</Text>
-                <Text style={styles.statLabel}>Tags</Text>
+                <Text style={styles.statLabel}>태그</Text>
               </View>
             </View>
 
@@ -108,12 +120,12 @@ export default function FandomDetailScreen() {
                 color={isFollowing ? colors.mutedForeground : colors.primaryForeground}
               />
               <Text style={[styles.followBtnText, isFollowing && styles.followingBtnText]}>
-                {isFollowing ? "Following" : "Join Community"}
+                {isFollowing ? "팔로잉" : "커뮤니티 가입"}
               </Text>
             </Pressable>
 
             <Text style={styles.postsHeader}>
-              Posts ({formatCount(fandomPosts.length)})
+              게시글 ({formatCount(fandomPosts.length)})
             </Text>
           </View>
         </>
@@ -126,7 +138,7 @@ export default function FandomDetailScreen() {
       ListEmptyComponent={
         <View style={styles.empty}>
           <Feather name="file-text" size={36} color={colors.mutedForeground} />
-          <Text style={styles.emptyText}>No posts yet in this fandom</Text>
+          <Text style={styles.emptyText}>아직 게시글이 없습니다</Text>
         </View>
       }
     />

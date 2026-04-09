@@ -74,7 +74,7 @@ export default function PostDetailScreen() {
   if (!post) {
     return (
       <View style={[styles.notFound, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.mutedForeground }}>Post not found</Text>
+        <Text style={{ color: colors.mutedForeground }}>게시글을 찾을 수 없습니다</Text>
       </View>
     );
   }
@@ -175,7 +175,7 @@ export default function PostDetailScreen() {
 
             <View style={styles.commentsHeader}>
               <Text style={styles.commentsTitle}>
-                Comments ({comments.length})
+                댓글 ({comments.length})
               </Text>
             </View>
           </>
@@ -183,7 +183,7 @@ export default function PostDetailScreen() {
         renderItem={({ item }) => <CommentItem comment={item} colors={colors} />}
         ListEmptyComponent={
           <View style={styles.emptyComments}>
-            <Text style={styles.emptyCommentsText}>No comments yet. Be the first!</Text>
+            <Text style={styles.emptyCommentsText}>아직 댓글이 없습니다. 첫 댓글을 달아보세요!</Text>
           </View>
         }
       />
@@ -196,7 +196,7 @@ export default function PostDetailScreen() {
       >
         <TextInput
           style={[styles.commentInput, { color: colors.foreground, borderColor: colors.border }]}
-          placeholder="Add a comment..."
+          placeholder="댓글 추가..."
           placeholderTextColor={colors.mutedForeground}
           value={commentText}
           onChangeText={setCommentText}
