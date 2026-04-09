@@ -7,26 +7,28 @@ import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, useColorScheme } from "react-native";
 import { useFandom } from "@/context/FandomContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 
 function NativeTabLayout() {
+  const { t } = useLanguage();
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "house", selected: "house.fill" }} />
-        <Label>홈</Label>
+        <Label>{t.home}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="explore">
         <Icon sf={{ default: "safari", selected: "safari.fill" }} />
-        <Label>탐색</Label>
+        <Label>{t.explore}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="notifications">
         <Icon sf={{ default: "bell", selected: "bell.fill" }} />
-        <Label>알림</Label>
+        <Label>{t.notifications}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person.circle", selected: "person.circle.fill" }} />
-        <Label>프로필</Label>
+        <Label>{t.profile}</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -34,6 +36,7 @@ function NativeTabLayout() {
 
 function ClassicTabLayout() {
   const colors = useColors();
+  const { t } = useLanguage();
   const { unreadCount } = useFandom();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -67,7 +70,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "홈",
+          title: t.home,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="house" tintColor={color} size={24} />
@@ -79,7 +82,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: "탐색",
+          title: t.explore,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="safari" tintColor={color} size={24} />
@@ -91,7 +94,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="notifications"
         options={{
-          title: "알림",
+          title: t.notifications,
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: colors.notification },
           tabBarIcon: ({ color }) =>
@@ -105,7 +108,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "프로필",
+          title: t.profile,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="person.circle" tintColor={color} size={24} />

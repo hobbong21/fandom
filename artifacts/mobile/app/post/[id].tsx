@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useFandom } from "@/context/FandomContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 import type { Comment } from "@/constants/data";
 
@@ -63,6 +64,7 @@ export default function PostDetailScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { posts, likedPosts, savedPosts, toggleLike, toggleSave, getPostComments, addComment } = useFandom();
+  const { t } = useLanguage();
   const post = posts.find((p) => p.id === id);
   const comments = getPostComments(id ?? "");
   const isLiked = likedPosts.includes(id ?? "");
@@ -74,7 +76,7 @@ export default function PostDetailScreen() {
   if (!post) {
     return (
       <View style={[styles.notFound, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.mutedForeground }}>게시글을 찾을 수 없습니다</Text>
+        <Text style={{ color: colors.mutedForeground }}>{t.postNotFound}</Text>
       </View>
     );
   }
@@ -175,7 +177,7 @@ export default function PostDetailScreen() {
 
             <View style={styles.commentsHeader}>
               <Text style={styles.commentsTitle}>
-                댓글 ({comments.length})
+                {t.commentsLabel} ({comments.length})
               </Text>
             </View>
           </>
@@ -183,20 +185,15 @@ export default function PostDetailScreen() {
         renderItem={({ item }) => <CommentItem comment={item} colors={colors} />}
         ListEmptyComponent={
           <View style={styles.emptyComments}>
-            <Text style={styles.emptyCommentsText}>아직 댓글이 없습니다. 첫 댓글을 달아보세요!</Text>
+            <Text style={styles.emptyCommentsText}>{t.firstComment}</Text>
           </View>
         }
       />
 
-      <View
-        style={[
-          styles.inputBar,
-          { paddingBottom: isWeb ? 34 : insets.bottom + 8 },
-        ]}
-      >
+      <View style={[styles.inputBar, { paddingBottom: isWeb ? 34 : insets.bottom + 8 }]}>
         <TextInput
           style={[styles.commentInput, { color: colors.foreground, borderColor: colors.border }]}
-          placeholder="댓글 추가..."
+          placeholder={t.commentPlaceholder}
           placeholderTextColor={colors.mutedForeground}
           value={commentText}
           onChangeText={setCommentText}
@@ -207,7 +204,11 @@ export default function PostDetailScreen() {
           onPress={handleSubmitComment}
           disabled={!commentText.trim()}
         >
-          <Feather name="send" size={18} color={commentText.trim() ? colors.primaryForeground : colors.mutedForeground} />
+          <Feather
+            name="send"
+            size={18}
+            color={commentText.trim() ? colors.primaryForeground : colors.mutedForeground}
+          />
         </Pressable>
       </View>
     </KeyboardAvoidingView>
@@ -216,14 +217,8 @@ export default function PostDetailScreen() {
 
 const makeStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    notFound: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-    },
+    container: { flex: 1 },
+    notFound: { flex: 1, alignItems: "center", justifyContent: "center" },
     header: {
       flexDirection: "row",
       alignItems: "center",
@@ -239,99 +234,23 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    fandomBadge: {
-      backgroundColor: colors.primary + "22",
-      paddingHorizontal: 14,
-      paddingVertical: 5,
-      borderRadius: 20,
-    },
-    fandomBadgeText: {
-      fontSize: 13,
-      fontWeight: "600" as const,
-      color: colors.primary,
-    },
-    postSection: {
-      paddingHorizontal: 20,
-      paddingBottom: 20,
-    },
-    authorRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
-      marginBottom: 14,
-    },
-    avatar: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    avatarText: {
-      fontSize: 16,
-      fontWeight: "700" as const,
-    },
-    authorName: {
-      fontSize: 14,
-      fontWeight: "600" as const,
-      color: colors.foreground,
-    },
-    postTime: {
-      fontSize: 12,
-      color: colors.mutedForeground,
-    },
-    postTitle: {
-      fontSize: 22,
-      fontWeight: "800" as const,
-      color: colors.foreground,
-      lineHeight: 30,
-      marginBottom: 12,
-    },
-    postContent: {
-      fontSize: 15,
-      color: colors.mutedForeground,
-      lineHeight: 24,
-      marginBottom: 16,
-    },
-    coverImage: {
-      width: "100%",
-      height: 200,
-      borderRadius: 14,
-      marginBottom: 14,
-    },
-    tags: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 8,
-      marginBottom: 16,
-    },
-    tag: {
-      backgroundColor: colors.secondary,
-      paddingHorizontal: 12,
-      paddingVertical: 5,
-      borderRadius: 20,
-    },
-    tagText: {
-      fontSize: 12,
-      fontWeight: "500" as const,
-      color: colors.primary,
-    },
-    actions: {
-      flexDirection: "row",
-      gap: 20,
-      paddingTop: 14,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-    },
-    actionBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-    },
-    actionCount: {
-      fontSize: 15,
-      fontWeight: "600" as const,
-    },
+    fandomBadge: { backgroundColor: colors.primary + "22", paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20 },
+    fandomBadgeText: { fontSize: 13, fontWeight: "600" as const, color: colors.primary },
+    postSection: { paddingHorizontal: 20, paddingBottom: 20 },
+    authorRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 },
+    avatar: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+    avatarText: { fontSize: 16, fontWeight: "700" as const },
+    authorName: { fontSize: 14, fontWeight: "600" as const, color: colors.foreground },
+    postTime: { fontSize: 12, color: colors.mutedForeground },
+    postTitle: { fontSize: 22, fontWeight: "800" as const, color: colors.foreground, lineHeight: 30, marginBottom: 12 },
+    postContent: { fontSize: 15, color: colors.mutedForeground, lineHeight: 24, marginBottom: 16 },
+    coverImage: { width: "100%", height: 200, borderRadius: 14, marginBottom: 14 },
+    tags: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 },
+    tag: { backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20 },
+    tagText: { fontSize: 12, fontWeight: "500" as const, color: colors.primary },
+    actions: { flexDirection: "row", gap: 20, paddingTop: 14, borderTopWidth: 1, borderTopColor: colors.border },
+    actionBtn: { flexDirection: "row", alignItems: "center", gap: 6 },
+    actionCount: { fontSize: 15, fontWeight: "600" as const },
     commentsHeader: {
       paddingHorizontal: 20,
       paddingVertical: 12,
@@ -339,11 +258,7 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       borderTopColor: colors.border,
       backgroundColor: colors.background,
     },
-    commentsTitle: {
-      fontSize: 17,
-      fontWeight: "700" as const,
-      color: colors.foreground,
-    },
+    commentsTitle: { fontSize: 17, fontWeight: "700" as const, color: colors.foreground },
     comment: {
       flexDirection: "row",
       paddingHorizontal: 20,
@@ -352,57 +267,17 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
-    commentAvatar: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    commentAvatarText: {
-      fontSize: 14,
-      fontWeight: "700" as const,
-    },
-    commentBody: {
-      flex: 1,
-    },
-    commentHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginBottom: 4,
-    },
-    commentAuthor: {
-      fontSize: 13,
-      fontWeight: "600" as const,
-      color: colors.foreground,
-    },
-    commentTime: {
-      fontSize: 12,
-      color: colors.mutedForeground,
-    },
-    commentContent: {
-      fontSize: 14,
-      color: colors.foreground,
-      lineHeight: 20,
-      marginBottom: 8,
-    },
-    commentLike: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-    },
-    commentLikeText: {
-      fontSize: 12,
-      fontWeight: "500" as const,
-    },
-    emptyComments: {
-      padding: 30,
-      alignItems: "center",
-    },
-    emptyCommentsText: {
-      fontSize: 14,
-      color: colors.mutedForeground,
-    },
+    commentAvatar: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },
+    commentAvatarText: { fontSize: 14, fontWeight: "700" as const },
+    commentBody: { flex: 1 },
+    commentHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
+    commentAuthor: { fontSize: 13, fontWeight: "600" as const, color: colors.foreground },
+    commentTime: { fontSize: 12, color: colors.mutedForeground },
+    commentContent: { fontSize: 14, color: colors.foreground, lineHeight: 20, marginBottom: 8 },
+    commentLike: { flexDirection: "row", alignItems: "center", gap: 4 },
+    commentLikeText: { fontSize: 12, fontWeight: "500" as const },
+    emptyComments: { padding: 30, alignItems: "center" },
+    emptyCommentsText: { fontSize: 14, color: colors.mutedForeground },
     inputBar: {
       flexDirection: "row",
       alignItems: "flex-end",
@@ -433,7 +308,5 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    sendBtnDisabled: {
-      backgroundColor: colors.muted,
-    },
+    sendBtnDisabled: { backgroundColor: colors.muted },
   });

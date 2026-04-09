@@ -14,21 +14,22 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FandomCard } from "@/components/FandomCard";
 import { PostCard } from "@/components/PostCard";
 import { useFandom } from "@/context/FandomContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
-
-const FEED_FILTERS = ["추천", "팔로잉", "인기"];
 
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { posts, fandoms, followedFandomIds } = useFandom();
-  const [activeFilter, setActiveFilter] = useState("추천");
+  const { t } = useLanguage();
+  const [activeFilter, setActiveFilter] = useState(0);
 
+  const feedFilters = [t.feedFor, t.feedFollowing, t.feedTrending];
   const featuredFandoms = fandoms.slice(0, 4);
   const isWeb = Platform.OS === "web";
 
   const filteredPosts =
-    activeFilter === "팔로잉"
+    activeFilter === 1
       ? posts.filter((p) => followedFandomIds.includes(p.fandomId))
       : posts;
 
@@ -37,12 +38,9 @@ export default function HomeScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View
-        style={[
-          styles.header,
-          { paddingTop: isWeb ? 67 : insets.top + 12 },
-        ]}
+        style={[styles.header, { paddingTop: isWeb ? 67 : insets.top + 12 }]}
       >
-        <Text style={styles.logo}>팬덤</Text>
+        <Text style={styles.logo}>{t.appName}</Text>
         <Pressable style={styles.searchBtn} onPress={() => router.push("/explore")}>
           <Feather name="search" size={20} color={colors.foreground} />
         </Pressable>
@@ -70,21 +68,13 @@ export default function HomeScreen() {
             </ScrollView>
 
             <View style={styles.filterRow}>
-              {FEED_FILTERS.map((filter) => (
+              {feedFilters.map((filter, i) => (
                 <Pressable
                   key={filter}
-                  style={[
-                    styles.filterBtn,
-                    activeFilter === filter && styles.filterBtnActive,
-                  ]}
-                  onPress={() => setActiveFilter(filter)}
+                  style={[styles.filterBtn, activeFilter === i && styles.filterBtnActive]}
+                  onPress={() => setActiveFilter(i)}
                 >
-                  <Text
-                    style={[
-                      styles.filterText,
-                      activeFilter === filter && styles.filterTextActive,
-                    ]}
-                  >
+                  <Text style={[styles.filterText, activeFilter === i && styles.filterTextActive]}>
                     {filter}
                   </Text>
                 </Pressable>
@@ -96,10 +86,10 @@ export default function HomeScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Feather name="rss" size={40} color={colors.mutedForeground} />
-            <Text style={styles.emptyTitle}>아직 게시글이 없습니다</Text>
-            <Text style={styles.emptyText}>팬덤에 가입하여 피드를 채워보세요</Text>
+            <Text style={styles.emptyTitle}>{t.noPostsTitle}</Text>
+            <Text style={styles.emptyText}>{t.noPostsText}</Text>
             <Pressable style={styles.exploreBtn} onPress={() => router.push("/explore")}>
-              <Text style={styles.exploreBtnText}>팬덤 탐색하기</Text>
+              <Text style={styles.exploreBtnText}>{t.exploreFandoms}</Text>
             </Pressable>
           </View>
         }
@@ -110,9 +100,7 @@ export default function HomeScreen() {
 
 const makeStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-    },
+    container: { flex: 1 },
     header: {
       flexDirection: "row",
       alignItems: "center",
@@ -135,53 +123,22 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    featured: {
-      marginBottom: 16,
-    },
-    featuredContent: {
-      paddingHorizontal: 16,
-    },
-    filterRow: {
-      flexDirection: "row",
-      gap: 8,
-      marginBottom: 16,
-    },
+    featured: { marginBottom: 16 },
+    featuredContent: { paddingHorizontal: 16 },
+    filterRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
     filterBtn: {
       paddingHorizontal: 16,
       paddingVertical: 7,
       borderRadius: 20,
       backgroundColor: colors.muted,
     },
-    filterBtnActive: {
-      backgroundColor: colors.primary,
-    },
-    filterText: {
-      fontSize: 14,
-      fontWeight: "500" as const,
-      color: colors.mutedForeground,
-    },
-    filterTextActive: {
-      color: colors.primaryForeground,
-    },
-    list: {
-      paddingHorizontal: 16,
-    },
-    empty: {
-      alignItems: "center",
-      paddingVertical: 60,
-      gap: 10,
-    },
-    emptyTitle: {
-      fontSize: 18,
-      fontWeight: "700" as const,
-      color: colors.foreground,
-    },
-    emptyText: {
-      fontSize: 14,
-      color: colors.mutedForeground,
-      textAlign: "center",
-      maxWidth: 240,
-    },
+    filterBtnActive: { backgroundColor: colors.primary },
+    filterText: { fontSize: 14, fontWeight: "500" as const, color: colors.mutedForeground },
+    filterTextActive: { color: colors.primaryForeground },
+    list: { paddingHorizontal: 16 },
+    empty: { alignItems: "center", paddingVertical: 60, gap: 10 },
+    emptyTitle: { fontSize: 18, fontWeight: "700" as const, color: colors.foreground },
+    emptyText: { fontSize: 14, color: colors.mutedForeground, textAlign: "center", maxWidth: 240 },
     exploreBtn: {
       backgroundColor: colors.primary,
       paddingHorizontal: 24,
@@ -189,9 +146,5 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       borderRadius: 20,
       marginTop: 8,
     },
-    exploreBtnText: {
-      color: colors.primaryForeground,
-      fontWeight: "600" as const,
-      fontSize: 14,
-    },
+    exploreBtnText: { color: colors.primaryForeground, fontWeight: "600" as const, fontSize: 14 },
   });
