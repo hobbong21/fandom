@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "9UrYHziKzWn4cMSfkV52r"
+uri = "file://artifacts/mobile/assets/images/icon.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "WLuZH9URG4QwG583-3vxX"
+uri = "file://artifacts/mobile/assets/images/hero-banner.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "chw0zq5soVQHc5Zt3ya_2"
+uri = "file://artifacts/mobile/assets/images/category-fantasy.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "mkPtYtkNRXwuS7ZDLGIuu"
+uri = "file://artifacts/mobile/assets/images/category-anime.png"
+type = "image"
+title = "generated_image"
