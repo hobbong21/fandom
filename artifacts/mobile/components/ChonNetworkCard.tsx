@@ -1,10 +1,12 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { FAN_TIERS, getTierInfo } from "@/constants/fanTiers";
-import { ChonConnection } from "@/context/XPContext";
+import { getTierInfo } from "@/constants/fanTiers";
+import { ChonConnection, useXP } from "@/context/XPContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { ChonNetworkGraph } from "@/components/ChonNetworkGraph";
 
 interface Props {
   connections: ChonConnection[];
@@ -13,7 +15,17 @@ interface Props {
 export function ChonNetworkCard({ connections }: Props) {
   const colors = useColors();
   const { language } = useLanguage();
+  const { totalXP } = useXP();
+  const { user } = useAuth();
   const [filter, setFilter] = useState<1 | 2 | null>(null);
+  const [showGraph, setShowGraph] = useState(false);
+
+  const userInitials = (user?.name ?? "나")
+    .split(" ")
+    .map((w: string) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const firstDegree = connections.filter((c) => c.degree === 1);
   const secondDegree = connections.filter((c) => c.degree === 2);
@@ -37,20 +49,35 @@ export function ChonNetworkCard({ connections }: Props) {
           <Text style={styles.networkIcon}>🔗</Text>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>{labels.title}</Text>
         </View>
-        <View style={styles.summaryBadges}>
-          <View style={[styles.badge, { backgroundColor: "#eff6ff" }]}>
-            <Text style={[styles.badgeNum, { color: "#3b82f6" }]}>{firstDegree.length}</Text>
-            <Text style={[styles.badgeLabel, { color: "#3b82f6" }]}>{labels.firstDegree}</Text>
-          </View>
-          <View style={[styles.badge, { backgroundColor: "#f3f4f6" }]}>
-            <Text style={[styles.badgeNum, { color: "#6b7280" }]}>{secondDegree.length}</Text>
-            <Text style={[styles.badgeLabel, { color: "#6b7280" }]}>{labels.secondDegree}</Text>
-          </View>
-          {royalCount > 0 && (
-            <View style={[styles.badge, { backgroundColor: "#fffbeb" }]}>
-              <Text style={[styles.badgeNum, { color: "#f59e0b" }]}>👑 {royalCount}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View style={styles.summaryBadges}>
+            <View style={[styles.badge, { backgroundColor: "#eff6ff" }]}>
+              <Text style={[styles.badgeNum, { color: "#3b82f6" }]}>{firstDegree.length}</Text>
+              <Text style={[styles.badgeLabel, { color: "#3b82f6" }]}>{labels.firstDegree}</Text>
             </View>
-          )}
+            <View style={[styles.badge, { backgroundColor: "#f3f4f6" }]}>
+              <Text style={[styles.badgeNum, { color: "#6b7280" }]}>{secondDegree.length}</Text>
+              <Text style={[styles.badgeLabel, { color: "#6b7280" }]}>{labels.secondDegree}</Text>
+            </View>
+            {royalCount > 0 && (
+              <View style={[styles.badge, { backgroundColor: "#fffbeb" }]}>
+                <Text style={[styles.badgeNum, { color: "#f59e0b" }]}>👑 {royalCount}</Text>
+              </View>
+            )}
+          </View>
+          <Pressable
+            style={({ pressed }) => [{
+              flexDirection: "row", alignItems: "center", gap: 5,
+              backgroundColor: pressed ? "#6d28d9" : "#7c3aed",
+              paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14,
+            }]}
+            onPress={() => setShowGraph(true)}
+          >
+            <Feather name="share-2" size={12} color="#fff" />
+            <Text style={{ fontSize: 11, fontWeight: "700", color: "#fff" }}>
+              {language === "ko" ? "노드로 보기" : "View Graph"}
+            </Text>
+          </Pressable>
         </View>
       </View>
 
@@ -115,6 +142,15 @@ export function ChonNetworkCard({ connections }: Props) {
           {connections.length} {labels.connections}
         </Text>
       </View>
+
+      <ChonNetworkGraph
+        visible={showGraph}
+        onClose={() => setShowGraph(false)}
+        connections={connections}
+        userName={user?.name ?? "나"}
+        userInitials={userInitials}
+        totalXP={totalXP}
+      />
     </View>
   );
 }
