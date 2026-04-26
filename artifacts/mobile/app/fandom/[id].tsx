@@ -1,30 +1,200 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  FlatList,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArtistAvatar } from "@/components/ArtistAvatar";
 import { PostCard } from "@/components/PostCard";
+import { useAuth } from "@/context/AuthContext";
+import { useChat, type ChatMessage } from "@/context/ChatContext";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useXP } from "@/context/XPContext";
 import { useColors } from "@/hooks/useColors";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
+import type { Fandom } from "@/constants/data";
 
-type Tab = "intro" | "news" | "fans";
+type Tab = "intro" | "news" | "fans" | "chat";
 
 function formatCount(n: number): string {
   if (n >= 10000) return (n / 10000).toFixed(1) + "만";
   if (n >= 1000) return (n / 1000).toFixed(1) + "K";
   return n.toString();
+}
+
+function formatChatTime(ts: number): string {
+  const diff = Date.now() - ts;
+  if (diff < 60000) return "방금";
+  if (diff < 3600000) return Math.floor(diff / 60000) + "분 전";
+  if (diff < 86400000) return Math.floor(diff / 3600000) + "시간 전";
+  return Math.floor(diff / 86400000) + "일 전";
+}
+
+function ChatTabContent({ fandomId, fandom }: { fandomId: string; fandom: Fandom }) {
+  const colors = useColors();
+  const { user } = useAuth();
+  const { getMessages, sendMessage } = useChat();
+  const insets = useSafeAreaInsets();
+  const isDesktop = useIsDesktop();
+  const [input, setInput] = useState("");
+  const flatListRef = useRef<FlatList>(null);
+
+  const messages = getMessages(fandomId);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 100);
+    }
+  }, [messages.length]);
+
+  const handleSend = () => {
+    if (!input.trim() || !user) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    sendMessage(fandomId, user.id, user.name, user.avatar, input.trim());
+    setInput("");
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+  };
+
+  const renderMessage = ({ item }: { item: ChatMessage }) => {
+    const isMe = item.authorId === user?.id;
+    const isArtist = item.isArtist;
+    return (
+      <View style={{
+        flexDirection: "row",
+        justifyContent: isMe ? "flex-end" : "flex-start",
+        marginBottom: 10,
+        gap: 8,
+        alignItems: "flex-end",
+      }}>
+        {!isMe && (
+          <View style={{
+            width: 32, height: 32, borderRadius: 16,
+            backgroundColor: isArtist ? fandom.color : colors.muted,
+            alignItems: "center", justifyContent: "center",
+            borderWidth: isArtist ? 2 : 0,
+            borderColor: isArtist ? fandom.color + "88" : "transparent",
+          }}>
+            <Text style={{ fontSize: 13, fontWeight: "700", color: isArtist ? "#fff" : colors.foreground }}>
+              {item.authorAvatar.slice(0, 1)}
+            </Text>
+          </View>
+        )}
+        <View style={{ maxWidth: "72%" }}>
+          {!isMe && (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 3 }}>
+              <Text style={{ fontSize: 11, fontWeight: "700", color: isArtist ? fandom.color : colors.mutedForeground }}>
+                {item.authorName}
+              </Text>
+              {isArtist && (
+                <View style={{ backgroundColor: fandom.color, borderRadius: 6, paddingHorizontal: 5, paddingVertical: 1 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "700", color: "#fff" }}>아티스트</Text>
+                </View>
+              )}
+            </View>
+          )}
+          <View style={{
+            backgroundColor: isMe ? fandom.color : isArtist ? fandom.color + "18" : colors.card,
+            borderRadius: isMe ? 18 : 18,
+            borderBottomRightRadius: isMe ? 4 : 18,
+            borderBottomLeftRadius: isMe ? 18 : 4,
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            borderWidth: isArtist && !isMe ? 1.5 : 0,
+            borderColor: fandom.color + "30",
+          }}>
+            <Text style={{ fontSize: 14, color: isMe ? "#fff" : colors.foreground, lineHeight: 20 }}>
+              {item.content}
+            </Text>
+          </View>
+          <Text style={{ fontSize: 10, color: colors.mutedForeground, marginTop: 3, textAlign: isMe ? "right" : "left" }}>
+            {formatChatTime(item.timestamp)}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={0}
+    >
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={renderMessage}
+        contentContainerStyle={{ padding: 16, paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={{ alignItems: "center", padding: 40, gap: 10 }}>
+            <Text style={{ fontSize: 36 }}>💬</Text>
+            <Text style={{ fontSize: 15, fontWeight: "600", color: colors.mutedForeground }}>채팅을 시작해보세요!</Text>
+            <Text style={{ fontSize: 13, color: colors.mutedForeground + "99", textAlign: "center" }}>
+              {fandom.artistName}과 팬들과 직접 대화하세요
+            </Text>
+          </View>
+        }
+      />
+      {user ? (
+        <View style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+          padding: 12,
+          paddingBottom: isDesktop ? 12 : insets.bottom + 12,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          backgroundColor: colors.background,
+        }}>
+          <View style={{
+            flex: 1, flexDirection: "row", alignItems: "center",
+            backgroundColor: colors.muted, borderRadius: 24, paddingHorizontal: 14, paddingVertical: 2,
+          }}>
+            <TextInput
+              style={{ flex: 1, fontSize: 14, color: colors.foreground, paddingVertical: 10, maxHeight: 100 }}
+              placeholder="메시지 보내기..."
+              placeholderTextColor={colors.mutedForeground}
+              value={input}
+              onChangeText={setInput}
+              multiline
+              returnKeyType="send"
+              onSubmitEditing={handleSend}
+              blurOnSubmit={false}
+            />
+          </View>
+          <Pressable
+            style={({ pressed }) => [{
+              width: 42, height: 42, borderRadius: 21,
+              backgroundColor: input.trim() ? fandom.color : colors.muted,
+              alignItems: "center", justifyContent: "center",
+              opacity: pressed ? 0.8 : 1,
+            }]}
+            onPress={handleSend}
+            disabled={!input.trim()}
+          >
+            <Feather name="send" size={18} color={input.trim() ? "#fff" : colors.mutedForeground} />
+          </Pressable>
+        </View>
+      ) : (
+        <View style={{ padding: 16, alignItems: "center", borderTopWidth: 1, borderTopColor: colors.border }}>
+          <Text style={{ fontSize: 13, color: colors.mutedForeground }}>채팅에 참여하려면 로그인이 필요합니다</Text>
+        </View>
+      )}
+    </KeyboardAvoidingView>
+  );
 }
 
 export default function ArtistDetailScreen() {
@@ -65,6 +235,7 @@ export default function ArtistDetailScreen() {
     intro: "소개",
     news: `소식 ${artistPosts.length > 0 ? `(${artistPosts.length})` : ""}`,
     fans: `팬게시판 ${fanPosts.length > 0 ? `(${fanPosts.length})` : ""}`,
+    chat: "💬 채팅",
   };
 
   /* ── Hero ─────────────────────────────────────── */
@@ -226,7 +397,7 @@ export default function ArtistDetailScreen() {
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     }}>
-      {(["intro", "news", "fans"] as Tab[]).map((tab) => (
+      {(["intro", "news", "fans", "chat"] as Tab[]).map((tab) => (
         <Pressable
           key={tab}
           style={{
@@ -501,6 +672,32 @@ export default function ArtistDetailScreen() {
       <View style={{ height: 12 }} />
     </View>
   );
+
+  if (activeTab === "chat") {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View>
+          <View style={{ backgroundColor: fandom.color, paddingTop: isWeb ? 16 : insets.top + 10, paddingBottom: 0 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingBottom: 14 }}>
+              <Pressable
+                style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: "rgba(0,0,0,0.25)", alignItems: "center", justifyContent: "center" }}
+                onPress={() => router.back()}
+              >
+                <Feather name="arrow-left" size={18} color="#fff" />
+              </Pressable>
+              <ArtistAvatar avatarUrl={fandom.avatarUrl} emoji={fandom.emoji} size={36} backgroundColor="rgba(255,255,255,0.2)" />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 15, fontWeight: "800", color: "#fff" }}>{fandom.artistName}</Text>
+                <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.75)" }}>실시간 채팅방</Text>
+              </View>
+            </View>
+            {tabBar}
+          </View>
+        </View>
+        <ChatTabContent fandomId={id ?? ""} fandom={fandom} />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>

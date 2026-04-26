@@ -39,6 +39,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: "bell", selected: "bell.fill" }} />
         <Label>{t.notifications}</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="store">
+        <Icon sf={{ default: "bag", selected: "bag.fill" }} />
+        <Label>스토어</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person.circle", selected: "person.circle.fill" }} />
         <Label>{t.profile}</Label>
@@ -364,6 +368,7 @@ function ClassicTabLayout() {
     { name: "index", icon: "home", label: t.home },
     { name: "explore", icon: "compass", label: t.explore },
     { name: "notifications", icon: "bell", label: t.notifications, badge: unreadCount },
+    { name: "store", icon: "shopping-bag", label: "스토어" },
     { name: "profile", icon: "user", label: t.profile },
   ];
 
@@ -381,6 +386,7 @@ function ClassicTabLayout() {
             <Tabs.Screen name="index" />
             <Tabs.Screen name="explore" />
             <Tabs.Screen name="notifications" />
+            <Tabs.Screen name="store" />
             <Tabs.Screen name="profile" />
           </Tabs>
         </View>
@@ -455,6 +461,18 @@ function ClassicTabLayout() {
               <SymbolView name={focused ? "bell.fill" : "bell"} tintColor={color} size={24} />
             ) : (
               <Feather name="bell" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="store"
+        options={{
+          title: "스토어",
+          tabBarIcon: ({ color, focused }) =>
+            isIOS ? (
+              <SymbolView name={focused ? "bag.fill" : "bag"} tintColor={color} size={24} />
+            ) : (
+              <Feather name="shopping-bag" size={22} color={color} />
             ),
         }}
       />
