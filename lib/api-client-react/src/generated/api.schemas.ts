@@ -31,6 +31,12 @@ export interface CreateOpenaiConversationBody {
   systemPrompt?: string;
 }
 
+export interface UpdateOpenaiConversationBody {
+  title?: string;
+  model?: string;
+  systemPrompt?: string;
+}
+
 export interface SendOpenaiMessageBody {
   content: string;
 }

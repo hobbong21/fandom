@@ -5,6 +5,8 @@ import {
   CreateOpenaiConversationBody,
   GetOpenaiConversationParams,
   DeleteOpenaiConversationParams,
+  UpdateOpenaiConversationBody,
+  UpdateOpenaiConversationParams,
 } from "@workspace/api-zod";
 
 const router = Router();
@@ -57,6 +59,32 @@ router.get("/conversations/:id", async (req, res) => {
     res.json({ ...conversation, messages: msgs });
   } catch (err) {
     res.status(500).json({ error: "Failed to get conversation" });
+  }
+});
+
+router.patch("/conversations/:id", async (req, res) => {
+  try {
+    const { id } = UpdateOpenaiConversationParams.parse({ id: Number(req.params.id) });
+    const body = UpdateOpenaiConversationBody.parse(req.body);
+
+    const updates: Partial<{ title: string; model: string; systemPrompt: string | null }> = {};
+    if (body.title !== undefined) updates.title = body.title;
+    if (body.model !== undefined) updates.model = body.model;
+    if ("systemPrompt" in body) updates.systemPrompt = body.systemPrompt?.trim() || null;
+
+    const [updated] = await db
+      .update(conversations)
+      .set(updates)
+      .where(eq(conversations.id, id))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Conversation not found" });
+      return;
+    }
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid request body" });
   }
 });
 

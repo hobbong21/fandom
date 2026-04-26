@@ -3,10 +3,12 @@ import { useLanguage } from "@/lib/i18n";
 import {
   useListOpenaiConversations,
   useCreateOpenaiConversation,
+  useUpdateOpenaiConversation,
   useGetOpenaiConversation,
   getListOpenaiConversationsQueryKey,
   getGetOpenaiConversationQueryKey,
   type OpenaiConversationWithMessages,
+  type OpenaiConversation,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -15,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal } from "lucide-react";
+import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const MODELS = ["gpt-5-mini", "gpt-5.4", "o4-mini"];
@@ -25,14 +27,44 @@ export default function Home() {
   const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [editingConversation, setEditingConversation] = useState<OpenaiConversation | null>(null);
 
   // Form states for new conversation
   const [newTitle, setNewTitle] = useState("");
   const [newModel, setNewModel] = useState(MODELS[1]);
   const [newSystemPrompt, setNewSystemPrompt] = useState("");
 
+  // Form states for editing conversation
+  const [editTitle, setEditTitle] = useState("");
+  const [editModel, setEditModel] = useState(MODELS[0]);
+  const [editSystemPrompt, setEditSystemPrompt] = useState("");
+
   const { data: conversations, isLoading: isLoadingConversations } = useListOpenaiConversations();
   const createConversation = useCreateOpenaiConversation();
+  const updateConversation = useUpdateOpenaiConversation();
+
+  const openEditDialog = (conv: OpenaiConversation) => {
+    setEditingConversation(conv);
+    setEditTitle(conv.title);
+    setEditModel(conv.model);
+    setEditSystemPrompt(conv.systemPrompt ?? "");
+  };
+
+  const handleUpdate = async () => {
+    if (!editingConversation || !editTitle) return;
+    updateConversation.mutate(
+      { id: editingConversation.id, data: { title: editTitle, model: editModel, systemPrompt: editSystemPrompt.trim() } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+          if (selectedId === editingConversation.id) {
+            queryClient.invalidateQueries({ queryKey: getGetOpenaiConversationQueryKey(editingConversation.id) });
+          }
+          setEditingConversation(null);
+        },
+      }
+    );
+  };
 
   const handleCreate = async () => {
     if (!newTitle) return;
@@ -53,6 +85,57 @@ export default function Home() {
 
   return (
     <div className="flex h-full w-full">
+      {/* Edit Conversation Dialog */}
+      <Dialog open={!!editingConversation} onOpenChange={(open) => !open && setEditingConversation(null)}>
+        <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground">
+          <DialogHeader>
+            <DialogTitle>Edit Workspace</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">{t("title")}</label>
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="E.g. Korean Translation Test"
+                data-testid="input-edit-title"
+                className="font-mono bg-background"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">{t("select_model")}</label>
+              <Select value={editModel} onValueChange={setEditModel}>
+                <SelectTrigger className="font-mono bg-background" data-testid="select-edit-model">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MODELS.map((m) => (
+                    <SelectItem key={m} value={m} data-testid={`edit-model-option-${m}`}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">{t("system_prompt")}</label>
+              <Textarea
+                value={editSystemPrompt}
+                onChange={(e) => setEditSystemPrompt(e.target.value)}
+                placeholder="You are a helpful assistant..."
+                className="font-mono bg-background h-24"
+                data-testid="input-edit-system-prompt"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingConversation(null)}>{t("cancel")}</Button>
+            <Button onClick={handleUpdate} disabled={!editTitle || updateConversation.isPending} data-testid="btn-save-edit">
+              {updateConversation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Left panel - Conversations List */}
       <div className="w-80 border-r border-border flex flex-col bg-card">
         <div className="p-4 border-b border-border flex justify-between items-center">
@@ -125,15 +208,17 @@ export default function Home() {
           ) : (
             <div className="p-2 space-y-1">
               {conversations?.map((conv) => (
-                <button
+                <div
                   key={conv.id}
-                  data-testid={`chat-item-${conv.id}`}
-                  onClick={() => setSelectedId(conv.id)}
                   className={`w-full text-left px-3 py-3 rounded-md text-sm transition-all flex items-center group ${
                     selectedId === conv.id ? "bg-primary/10 border border-primary/30" : "hover:bg-secondary border border-transparent"
                   }`}
                 >
-                  <div className="flex-1 min-w-0">
+                  <button
+                    data-testid={`chat-item-${conv.id}`}
+                    onClick={() => setSelectedId(conv.id)}
+                    className="flex-1 min-w-0 text-left"
+                  >
                     <div className={`font-medium truncate ${selectedId === conv.id ? "text-primary" : "text-foreground"}`}>
                       {conv.title}
                     </div>
@@ -141,9 +226,17 @@ export default function Home() {
                       <Cpu className="h-3 w-3 mr-1" />
                       {conv.model}
                     </div>
-                  </div>
-                  <ChevronRight className={`h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity ${selectedId === conv.id ? "opacity-100 text-primary" : "text-muted-foreground"}`} />
-                </button>
+                  </button>
+                  <button
+                    data-testid={`btn-edit-${conv.id}`}
+                    onClick={(e) => { e.stopPropagation(); openEditDialog(conv); }}
+                    className="ml-1 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all"
+                    title="Edit workspace"
+                  >
+                    <Settings2 className="h-3.5 w-3.5" />
+                  </button>
+                  <ChevronRight className={`h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity ml-1 ${selectedId === conv.id ? "opacity-100 text-primary" : "text-muted-foreground"}`} />
+                </div>
               ))}
             </div>
           )}

@@ -63,6 +63,27 @@ export const GetOpenaiConversationResponse = zod.object({
 });
 
 /**
+ * @summary Update a conversation's title, model, or system prompt
+ */
+export const UpdateOpenaiConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateOpenaiConversationBody = zod.object({
+  title: zod.string().optional(),
+  model: zod.string().optional(),
+  systemPrompt: zod.string().optional(),
+});
+
+export const UpdateOpenaiConversationResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  model: zod.string(),
+  systemPrompt: zod.string().optional(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
  * @summary Delete a conversation
  */
 export const DeleteOpenaiConversationParams = zod.object({
