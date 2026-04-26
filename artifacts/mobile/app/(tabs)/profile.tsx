@@ -23,6 +23,7 @@ import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useXP } from "@/context/XPContext";
 import { useColors } from "@/hooks/useColors";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 type Tab = "posts" | "saved" | "fandoms" | "network";
 
@@ -39,7 +40,7 @@ export default function ProfileScreen() {
   const [editing, setEditing] = useState(false);
   const [nickname, setNickname] = useState(user?.name ?? "");
   const [bio, setBio] = useState("");
-  const isWeb = Platform.OS === "web";
+  const isWeb = useIsDesktop();
 
   const tierInfo = getTierInfo(totalXP);
 

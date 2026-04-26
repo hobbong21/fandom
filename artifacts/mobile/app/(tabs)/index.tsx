@@ -16,6 +16,7 @@ import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 const WEB_MAX_WIDTH = 680;
 
@@ -83,11 +84,11 @@ export default function HomeScreen() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState(0);
+  const isWeb = useIsDesktop();
 
   const feedFilters = [t.feedFor, t.feedFollowing, t.feedTrending];
   const followedArtists = fandoms.filter((f) => followedFandomIds.includes(f.id));
   const featuredFandoms = fandoms.slice(0, 5);
-  const isWeb = Platform.OS === "web";
 
   const filteredPosts =
     activeFilter === 1

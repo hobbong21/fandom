@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { Notification } from "@/constants/data";
 
 const WEB_MAX_WIDTH = 680;
@@ -50,7 +51,7 @@ export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
   const { notifications, markAllRead, markRead, unreadCount } = useFandom();
   const { t } = useLanguage();
-  const isWeb = Platform.OS === "web";
+  const isWeb = useIsDesktop();
 
   const renderItem = (item: Notification) => {
     const iconColor = NOTIF_COLORS[item.type] ?? colors.primary;

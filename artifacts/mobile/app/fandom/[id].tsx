@@ -16,6 +16,7 @@ import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useXP } from "@/context/XPContext";
 import { useColors } from "@/hooks/useColors";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 type Tab = "intro" | "news" | "fans";
 
@@ -32,7 +33,7 @@ export default function ArtistDetailScreen() {
   const { fandoms, posts, followedFandomIds, toggleFollow } = useFandom();
   const { t } = useLanguage();
   const { earnXP } = useXP();
-  const isWeb = Platform.OS === "web";
+  const isWeb = useIsDesktop();
   const [activeTab, setActiveTab] = useState<Tab>("intro");
 
   const fandom = fandoms.find((f) => f.id === id);

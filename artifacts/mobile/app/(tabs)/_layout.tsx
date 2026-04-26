@@ -15,6 +15,7 @@ import {
   useColorScheme,
   useWindowDimensions,
 } from "react-native";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
@@ -355,7 +356,7 @@ function ClassicTabLayout() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const isIOS = Platform.OS === "ios";
-  const isWeb = Platform.OS === "web";
+  const isDesktop = useIsDesktop();
   const { width } = useWindowDimensions();
   const showRightPanel = width > 1120;
 
@@ -366,7 +367,7 @@ function ClassicTabLayout() {
     { name: "profile", icon: "user", label: t.profile },
   ];
 
-  if (isWeb) {
+  if (isDesktop) {
     return (
       <View style={styles.webRoot}>
         <WebSidebar navItems={navItems} />

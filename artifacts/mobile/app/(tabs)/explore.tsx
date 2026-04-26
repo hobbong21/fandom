@@ -15,6 +15,7 @@ import { CATEGORIES } from "@/constants/data";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 const WEB_MAX_WIDTH = 680;
 
@@ -25,7 +26,7 @@ export default function ExploreScreen() {
   const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
-  const isWeb = Platform.OS === "web";
+  const isWeb = useIsDesktop();
 
   const filtered = fandoms.filter((f) => {
     const q = search.toLowerCase();
