@@ -13,6 +13,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useXP } from "@/context/XPContext";
 import { useColors } from "@/hooks/useColors";
 import type { Fandom } from "@/constants/data";
+import { ArtistAvatar } from "@/components/ArtistAvatar";
 
 interface FandomCardProps {
   fandom: Fandom;
@@ -63,7 +64,8 @@ export function FandomCard({ fandom, variant = "default" }: FandomCardProps) {
         ]}
         onPress={() => router.push({ pathname: "/fandom/[id]", params: { id: fandom.id } })}
       >
-        <Text style={{ fontSize: 40, marginBottom: 6 }}>{fandom.emoji}</Text>
+        <ArtistAvatar avatarUrl={fandom.avatarUrl} emoji={fandom.emoji} size={64} backgroundColor={fandom.color + "30"} />
+        <View style={{ height: 6 }} />
         <Text style={{ fontSize: 12, fontWeight: "700", color: colors.foreground, textAlign: "center" }} numberOfLines={2}>
           {fandom.artistName}
         </Text>
@@ -113,7 +115,7 @@ export function FandomCard({ fandom, variant = "default" }: FandomCardProps) {
               }} />
             ))}
           </View>
-          <Text style={{ fontSize: 42 }}>{fandom.emoji}</Text>
+          <ArtistAvatar avatarUrl={fandom.avatarUrl} emoji={fandom.emoji} size={72} backgroundColor="rgba(255,255,255,0.25)" borderWidth={2} borderColor="rgba(255,255,255,0.5)" />
           {fandom.isVerified && (
             <View style={{
               position: "absolute",
@@ -203,18 +205,14 @@ export function FandomCard({ fandom, variant = "default" }: FandomCardProps) {
 
       <View style={{ padding: 16, flexDirection: "row", gap: 14, alignItems: "center" }}>
         {/* Artist avatar circle */}
-        <View style={{
-          width: 60,
-          height: 60,
-          borderRadius: 30,
-          backgroundColor: fandom.color + "20",
-          borderWidth: 2,
-          borderColor: fandom.color + "50",
-          alignItems: "center",
-          justifyContent: "center",
-        }}>
-          <Text style={{ fontSize: 28 }}>{fandom.emoji}</Text>
-        </View>
+        <ArtistAvatar
+          avatarUrl={fandom.avatarUrl}
+          emoji={fandom.emoji}
+          size={60}
+          backgroundColor={fandom.color + "20"}
+          borderWidth={2}
+          borderColor={fandom.color + "50"}
+        />
 
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>

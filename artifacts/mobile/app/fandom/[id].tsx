@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ArtistAvatar } from "@/components/ArtistAvatar";
 import { PostCard } from "@/components/PostCard";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -114,18 +115,15 @@ export default function ArtistDetailScreen() {
         alignItems: "center",
       }}>
         {/* Avatar */}
-        <View style={{
-          width: 96,
-          height: 96,
-          borderRadius: 48,
-          backgroundColor: "rgba(255,255,255,0.22)",
-          borderWidth: 3,
-          borderColor: "rgba(255,255,255,0.5)",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 14,
-        }}>
-          <Text style={{ fontSize: 48 }}>{fandom.emoji}</Text>
+        <View style={{ marginBottom: 14 }}>
+          <ArtistAvatar
+            avatarUrl={fandom.avatarUrl}
+            emoji={fandom.emoji}
+            size={96}
+            backgroundColor="rgba(255,255,255,0.22)"
+            borderWidth={3}
+            borderColor="rgba(255,255,255,0.5)"
+          />
         </View>
 
         {/* Name + verified */}
@@ -268,16 +266,12 @@ export default function ArtistDetailScreen() {
         borderColor: fandom.color + "30",
       }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <View style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: fandom.color,
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <Text style={{ fontSize: 16 }}>{fandom.emoji}</Text>
-          </View>
+          <ArtistAvatar
+            avatarUrl={fandom.avatarUrl}
+            emoji={fandom.emoji}
+            size={36}
+            backgroundColor={fandom.color}
+          />
           <View>
             <Text style={{ fontSize: 14, fontWeight: "700", color: colors.foreground }}>{fandom.artistName}</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>

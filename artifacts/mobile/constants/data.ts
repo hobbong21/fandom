@@ -50,6 +50,7 @@ export interface Fandom {
   isFollowing: boolean;
   color: string;
   emoji: string;
+  avatarUrl?: string;
   isVerified: boolean;
   recentActivity?: string;
   profile: ArtistProfile;
@@ -117,6 +118,7 @@ export const INITIAL_FANDOMS: Fandom[] = [
     isFollowing: true,
     color: "#e879a0",
     emoji: "🌙",
+    avatarUrl: "https://images.lifestyleasia.com/wp-content/uploads/sites/7/2024/01/29175013/Untitled-design-2024-01-29T173810.618.jpg",
     isVerified: true,
     recentActivity: "아이유가 5분 전에 메시지를 남겼어요",
     profile: {
@@ -164,6 +166,7 @@ export const INITIAL_FANDOMS: Fandom[] = [
     isFollowing: false,
     color: "#f59e0b",
     emoji: "🌻",
+    avatarUrl: "https://kprofiles.com/wp-content/uploads/2021/01/JANNABI-2-534x800.jpg",
     isVerified: true,
     recentActivity: "잔나비가 새 공연 소식을 올렸어요",
     profile: {
@@ -210,6 +213,7 @@ export const INITIAL_FANDOMS: Fandom[] = [
     isFollowing: true,
     color: "#3b82f6",
     emoji: "🦸",
+    avatarUrl: "https://www.gluwee.com/wp-content/uploads/2021/07/Youngwoong_5.jpg",
     isVerified: true,
     recentActivity: "임영웅이 오늘 라이브를 예고했어요",
     profile: {
@@ -256,6 +260,7 @@ export const INITIAL_FANDOMS: Fandom[] = [
     isFollowing: false,
     color: "#64748b",
     emoji: "🌧️",
+    avatarUrl: "https://koreajoongangdaily.joins.com/data/photo/2021/09/02/0f062457-4fb0-4c7c-8c63-ef8ef5c45a60.jpg",
     isVerified: false,
     recentActivity: "새 앨범 발매 D-7",
     profile: {
@@ -302,6 +307,7 @@ export const INITIAL_FANDOMS: Fandom[] = [
     isFollowing: false,
     color: "#ec4899",
     emoji: "🌺",
+    avatarUrl: "https://i.pinimg.com/originals/48/8f/aa/488faa955f93bfa66d31ad089957bf6d.jpg",
     isVerified: true,
     recentActivity: "송가인이 팬 편지에 답장했어요",
     profile: {
@@ -347,6 +353,7 @@ export const INITIAL_FANDOMS: Fandom[] = [
     isFollowing: true,
     color: "#10b981",
     emoji: "🎵",
+    avatarUrl: "https://i.mydramalist.com/60gvZK_5c.jpg",
     isVerified: true,
     recentActivity: "10cm가 새 싱글 프리뷰를 공유했어요",
     profile: {
@@ -377,6 +384,52 @@ export const INITIAL_FANDOMS: Fandom[] = [
         instagram: "10cm_official",
         youtube: "10cm",
         spotify: "10cm",
+      },
+    },
+  },
+  {
+    id: "7",
+    name: "장민호 팬클럽 민호나라",
+    artistName: "장민호",
+    genre: "trot",
+    category: "trot",
+    memberCount: 1500000,
+    postCount: 340000,
+    description: "장민호와 팬들의 따뜻한 소통 공간 — 공연, 방송, 일상 이야기.",
+    tags: ["장민호", "트로트", "미스터트롯", "민호나라"],
+    isFollowing: false,
+    color: "#f97316",
+    emoji: "🎙️",
+    avatarUrl: "https://www.koreadaily.com/data/photo/202402/06/fdc6b6da-6d93-4684-99f2-da782ebff1a6.jpg",
+    isVerified: true,
+    recentActivity: "장민호가 콘서트 준비 중이에요",
+    profile: {
+      introMessage: "민호나라 여러분, 안녕하세요 🎙️\n\n여러분의 응원이 제 무대의 원동력이에요. 무대 위에서 여러분의 함성을 들을 때마다 더 잘해야겠다는 생각이 들어요. 항상 최고의 무대로 보답할게요. 감사하고 사랑합니다!",
+      debutYear: 2019,
+      label: "후너스엔터테인먼트",
+      debutAlbum: "Begin Again",
+      latestRelease: {
+        title: "SCENE",
+        type: "정규",
+        releaseDate: "2023.11",
+        emoji: "🎬",
+      },
+      upcomingEvent: {
+        title: "장민호 전국투어 콘서트 「민호나라」",
+        date: "2025.06.21",
+        location: "서울 KSPO돔",
+        type: "콘서트",
+      },
+      discography: [
+        { title: "SCENE", type: "정규 3집", year: 2023 },
+        { title: "Miracle", type: "정규 2집", year: 2022 },
+        { title: "Stars", type: "미니 1집", year: 2021 },
+        { title: "미쳐서 이래", type: "싱글", year: 2021 },
+        { title: "Begin Again", type: "싱글", year: 2020 },
+      ],
+      socialLinks: {
+        instagram: "minho_official",
+        youtube: "장민호",
       },
     },
   },
