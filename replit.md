@@ -18,19 +18,32 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 ## Artifacts
 
-### Fandom Mobile (`artifacts/mobile`)
-A **hybrid** Expo app — runs as a web app in browsers AND as a native mobile app via Expo Go simultaneously. Frontend-only, uses AsyncStorage for persistence.
+### Fandom Mobile (`artifacts/mobile`) — 스타링 (Starling)
+A **hybrid** Expo app — runs as a web app in browsers AND as a native mobile app via Expo Go simultaneously. Frontend-only, uses AsyncStorage for persistence. **Concept: Direct artist-fan communication platform** for Korean singers, indie bands, and trot artists.
 
 **Hybrid layout:**
-- **Web (browser)**: Left sidebar navigation (220px), `tabBarPosition: 'left'`, web-optimized top/bottom padding
+- **Web (browser)**: Left custom sidebar (240px) with branding, user avatar/XP card, nav items with badges, CTA button. Content max-width 680px centered.
 - **Mobile (iOS/Android)**: Bottom tab bar with blur effect, native SF Symbols on iOS, Feather icons elsewhere
 
+**Fandom scope (Korean music only):**
+- `singer` — 가수 (e.g., IU 아이유)
+- `indie` — 인디밴드 (e.g., 잔나비, 넬, 10cm)
+- `trot` — 트로트 (e.g., 임영웅, 송가인)
+
+**Key data fields:**
+- `Fandom.genre` — `"singer" | "indie" | "trot"` (also mapped to `category`)
+- `Fandom.color` — artist brand color (hex)
+- `Fandom.emoji` — artist avatar emoji
+- `Fandom.isVerified` — official artist badge
+- `Post.isArtistPost` — marks posts from artist directly
+- `Post.isLive` — live event badge
+
 **Features:**
-- Home feed with featured fandoms carousel and posts feed (For You / Following / Trending filters)
-- Explore screen with search and category filtering
-- Fandom detail page with stats, tags, follow/unfollow
-- Post detail with full content, like/save, and comments
-- Notifications screen with badge count
+- Home: LiveBanner (red LIVE alert), following artists row, featured artists carousel, artist direct messages section, feed with filters
+- Explore: Genre filter pills (전체/가수/인디밴드/트로트 with emoji), artist cards with color accents
+- Artist detail: Color hero section with emoji avatar, verified badge, follow button, artist posts
+- Post cards: Artist badge (보라색 아티스트 tag), LIVE badge, heart/comment/bookmark with colored backgrounds
+- Notifications: Artist activity (red/purple), LIVE alerts, fan interactions differentiated
 - Profile screen: XP card, fan tier badge (🌱캐주얼/⭐미들/👑로열), 촌수 network, 4-tab layout
 - CHON platform: XP earning (+5 like, +20 comment, +30 join), toast notifications
 

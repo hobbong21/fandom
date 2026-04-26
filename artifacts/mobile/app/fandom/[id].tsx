@@ -4,7 +4,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
 import {
   FlatList,
-  Image,
   Platform,
   Pressable,
   StyleSheet,
@@ -19,7 +18,7 @@ import { useXP } from "@/context/XPContext";
 import { useColors } from "@/hooks/useColors";
 
 function formatCount(n: number): string {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+  if (n >= 10000) return (n / 10000).toFixed(1) + "만";
   if (n >= 1000) return (n / 1000).toFixed(1) + "K";
   return n.toString();
 }
@@ -35,12 +34,11 @@ export default function FandomDetailScreen() {
   const fandomPosts = posts.filter((p) => p.fandomId === id);
   const isFollowing = followedFandomIds.includes(id ?? "");
   const isWeb = Platform.OS === "web";
-  const styles = makeStyles(colors);
 
   if (!fandom) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={styles.notFound}>{t.fandomNotFound}</Text>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
+        <Text style={{ color: colors.mutedForeground, fontSize: 16 }}>{t.fandomNotFound}</Text>
       </View>
     );
   }
@@ -51,6 +49,11 @@ export default function FandomDetailScreen() {
     toggleFollow(fandom.id);
   };
 
+  const genreLabel = t.categories[fandom.genre] ?? fandom.genre;
+  const genreEmoji = (t as any).categoryEmojis?.[fandom.genre] ?? "🎵";
+  const artistPosts = fandomPosts.filter((p) => p.isArtistPost);
+  const fanPosts = fandomPosts.filter((p) => !p.isArtistPost);
+
   return (
     <FlatList
       data={fandomPosts}
@@ -60,138 +63,194 @@ export default function FandomDetailScreen() {
       contentContainerStyle={{ paddingBottom: isWeb ? 24 : insets.bottom + 100 }}
       ListHeaderComponent={
         <>
-          <View style={styles.hero}>
-            <Image source={fandom.coverImage} style={styles.heroImage} resizeMode="cover" />
-            <View style={styles.heroOverlay} />
+          {/* Hero section */}
+          <View style={{ backgroundColor: fandom.color, position: "relative", overflow: "hidden" }}>
+            {/* Pattern */}
+            <View style={[StyleSheet.absoluteFillObject, { opacity: 0.1 }]}>
+              {[...Array(20)].map((_, i) => (
+                <View key={i} style={{
+                  position: "absolute",
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: "#ffffff",
+                  top: (i % 5) * 50 + 20,
+                  left: Math.floor(i / 5) * 90 + 20,
+                }} />
+              ))}
+            </View>
+
+            {/* Back button */}
             <Pressable
-              style={[styles.backBtn, { top: isWeb ? 20 : insets.top + 12 }]}
+              style={{
+                position: "absolute",
+                top: isWeb ? 20 : insets.top + 14,
+                left: 16,
+                zIndex: 10,
+                width: 38,
+                height: 38,
+                borderRadius: 19,
+                backgroundColor: "rgba(0,0,0,0.3)",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
               onPress={() => router.back()}
             >
               <Feather name="arrow-left" size={20} color="#ffffff" />
             </Pressable>
-            <View style={[styles.heroContent, { bottom: 20 }]}>
-              <View style={styles.categoryBadge}>
-                <Text style={styles.categoryText}>
-                  {(t.categories[fandom.category] ?? fandom.category).toUpperCase()}
-                </Text>
+
+            {/* Hero content */}
+            <View style={{ paddingTop: isWeb ? 60 : insets.top + 60, paddingBottom: 30, paddingHorizontal: 20, alignItems: "center" }}>
+              <View style={{
+                width: 90,
+                height: 90,
+                borderRadius: 45,
+                backgroundColor: "rgba(255,255,255,0.25)",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 14,
+                borderWidth: 3,
+                borderColor: "rgba(255,255,255,0.5)",
+              }}>
+                <Text style={{ fontSize: 46 }}>{fandom.emoji}</Text>
               </View>
-              <Text style={styles.heroName}>{fandom.name}</Text>
+
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <Text style={{ fontSize: 26, fontWeight: "900", color: "#ffffff" }}>
+                  {fandom.artistName}
+                </Text>
+                {fandom.isVerified && (
+                  <View style={{ backgroundColor: "rgba(255,255,255,0.3)", borderRadius: 12, padding: 4 }}>
+                    <Feather name="check" size={13} color="#ffffff" />
+                  </View>
+                )}
+              </View>
+
+              <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                backgroundColor: "rgba(0,0,0,0.25)",
+                borderRadius: 16,
+                paddingHorizontal: 12,
+                paddingVertical: 5,
+                marginBottom: 16,
+              }}>
+                <Text style={{ fontSize: 13 }}>{genreEmoji}</Text>
+                <Text style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", fontWeight: "600" }}>{genreLabel}</Text>
+              </View>
+
+              {/* Stats row */}
+              <View style={{ flexDirection: "row", gap: 24, alignItems: "center" }}>
+                <View style={{ alignItems: "center" }}>
+                  <Text style={{ fontSize: 20, fontWeight: "800", color: "#ffffff" }}>{formatCount(fandom.memberCount)}</Text>
+                  <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.8)" }}>{t.members}</Text>
+                </View>
+                <View style={{ width: 1, height: 30, backgroundColor: "rgba(255,255,255,0.3)" }} />
+                <View style={{ alignItems: "center" }}>
+                  <Text style={{ fontSize: 20, fontWeight: "800", color: "#ffffff" }}>{formatCount(fandom.postCount)}</Text>
+                  <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.8)" }}>{t.posts}</Text>
+                </View>
+                <View style={{ width: 1, height: 30, backgroundColor: "rgba(255,255,255,0.3)" }} />
+                <View style={{ alignItems: "center" }}>
+                  <Text style={{ fontSize: 20, fontWeight: "800", color: "#ffffff" }}>{artistPosts.length}</Text>
+                  <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.8)" }}>아티스트 글</Text>
+                </View>
+              </View>
             </View>
           </View>
 
-          <View style={styles.infoSection}>
-            <View style={styles.statsRow}>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>{formatCount(fandom.memberCount)}</Text>
-                <Text style={styles.statLabel}>{t.members}</Text>
-              </View>
-              <View style={[styles.statBox, { borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.border }]}>
-                <Text style={styles.statValue}>{formatCount(fandom.postCount)}</Text>
-                <Text style={styles.statLabel}>{t.posts}</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>{fandom.tags.length}</Text>
-                <Text style={styles.statLabel}>{t.tagsLabel}</Text>
-              </View>
-            </View>
+          {/* Info section */}
+          <View style={{ padding: 20 }}>
+            {/* Description */}
+            <Text style={{ fontSize: 14, color: colors.mutedForeground, lineHeight: 22, marginBottom: 14 }}>
+              {fandom.description}
+            </Text>
 
-            <Text style={styles.description}>{fandom.description}</Text>
-
-            <View style={styles.tags}>
+            {/* Tags */}
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
               {fandom.tags.map((tag) => (
-                <View key={tag} style={styles.tag}>
-                  <Text style={styles.tagText}>#{tag}</Text>
+                <View key={tag} style={{
+                  backgroundColor: fandom.color + "18",
+                  paddingHorizontal: 12,
+                  paddingVertical: 5,
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  borderColor: fandom.color + "30",
+                }}>
+                  <Text style={{ fontSize: 13, fontWeight: "500", color: fandom.color }}>#{tag}</Text>
                 </View>
               ))}
             </View>
 
+            {/* Recent activity */}
+            {fandom.recentActivity && (
+              <View style={{
+                backgroundColor: fandom.color + "12",
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                borderWidth: 1,
+                borderColor: fandom.color + "25",
+              }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: fandom.color }} />
+                <Text style={{ fontSize: 13, color: fandom.color, fontWeight: "500", flex: 1 }}>
+                  {fandom.recentActivity}
+                </Text>
+              </View>
+            )}
+
+            {/* Follow button */}
             <Pressable
-              style={[styles.followBtn, isFollowing && styles.followingBtn]}
+              style={[{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                borderRadius: 28,
+                paddingVertical: 15,
+                marginBottom: 24,
+              }, isFollowing
+                ? { backgroundColor: "transparent", borderWidth: 1.5, borderColor: colors.border }
+                : { backgroundColor: fandom.color }
+              ]}
               onPress={handleFollow}
             >
               <Feather
-                name={isFollowing ? "check" : "plus"}
+                name={isFollowing ? "check" : "user-plus"}
                 size={16}
-                color={isFollowing ? colors.mutedForeground : colors.primaryForeground}
+                color={isFollowing ? colors.mutedForeground : "#ffffff"}
               />
-              <Text style={[styles.followBtnText, isFollowing && styles.followingBtnText]}>
-                {isFollowing ? t.followingBtn : t.joinCommunity}
+              <Text style={{
+                fontSize: 15,
+                fontWeight: "700",
+                color: isFollowing ? colors.mutedForeground : "#ffffff",
+              }}>
+                {isFollowing ? "✓ 팔로잉" : t.joinCommunity}
               </Text>
             </Pressable>
 
-            <Text style={styles.postsHeader}>
-              {t.posts} ({formatCount(fandomPosts.length)})
+            {/* Section header */}
+            <Text style={{ fontSize: 18, fontWeight: "800", color: colors.foreground }}>
+              💬 소통 ({fandomPosts.length})
             </Text>
           </View>
         </>
       }
       renderItem={({ item }) => (
-        <View style={styles.postWrap}>
+        <View style={{ paddingHorizontal: 16 }}>
           <PostCard post={item} />
         </View>
       )}
       ListEmptyComponent={
-        <View style={styles.empty}>
-          <Feather name="file-text" size={36} color={colors.mutedForeground} />
-          <Text style={styles.emptyText}>{t.noPostsInFandom}</Text>
+        <View style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}>
+          <Text style={{ fontSize: 48 }}>💌</Text>
+          <Text style={{ fontSize: 14, color: colors.mutedForeground }}>{t.noPostsInFandom}</Text>
         </View>
       }
     />
   );
 }
-
-const makeStyles = (colors: ReturnType<typeof useColors>) =>
-  StyleSheet.create({
-    container: { flex: 1, alignItems: "center", justifyContent: "center" },
-    notFound: { color: colors.mutedForeground, fontSize: 16 },
-    hero: { height: 220, position: "relative" },
-    heroImage: { width: "100%", height: "100%" },
-    heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.5)" },
-    backBtn: {
-      position: "absolute",
-      left: 16,
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: "rgba(0,0,0,0.4)",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    heroContent: { position: "absolute", left: 20, right: 20 },
-    categoryBadge: {
-      backgroundColor: "rgba(255,255,255,0.2)",
-      paddingHorizontal: 10,
-      paddingVertical: 3,
-      borderRadius: 6,
-      alignSelf: "flex-start",
-      marginBottom: 6,
-    },
-    categoryText: { fontSize: 11, fontWeight: "700" as const, color: "#ffffff", letterSpacing: 0.5 },
-    heroName: { fontSize: 26, fontWeight: "800" as const, color: "#ffffff" },
-    infoSection: { padding: 20 },
-    statsRow: { flexDirection: "row", backgroundColor: colors.card, borderRadius: 16, marginBottom: 16 },
-    statBox: { flex: 1, alignItems: "center", paddingVertical: 14 },
-    statValue: { fontSize: 20, fontWeight: "700" as const, color: colors.foreground },
-    statLabel: { fontSize: 12, color: colors.mutedForeground, marginTop: 2 },
-    description: { fontSize: 14, color: colors.mutedForeground, lineHeight: 22, marginBottom: 14 },
-    tags: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 },
-    tag: { backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20 },
-    tagText: { fontSize: 13, fontWeight: "500" as const, color: colors.primary },
-    followBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 6,
-      backgroundColor: colors.primary,
-      borderRadius: 24,
-      paddingVertical: 12,
-      marginBottom: 20,
-    },
-    followingBtn: { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.border },
-    followBtnText: { fontSize: 15, fontWeight: "600" as const, color: colors.primaryForeground },
-    followingBtnText: { color: colors.mutedForeground },
-    postsHeader: { fontSize: 18, fontWeight: "700" as const, color: colors.foreground },
-    postWrap: { paddingHorizontal: 16 },
-    empty: { alignItems: "center", paddingVertical: 60, gap: 10 },
-    emptyText: { fontSize: 14, color: colors.mutedForeground },
-  });

@@ -2,85 +2,89 @@ export type Language = "ko" | "en";
 
 const translations = {
   ko: {
-    appName: "팬덤",
+    appName: "스타링",
+    appTagline: "아티스트와 팬의 직접 소통",
 
-    // Tabs
     home: "홈",
     explore: "탐색",
     notifications: "알림",
     profile: "프로필",
 
-    // Categories
     categories: {
       all: "전체",
-      anime: "애니메이션",
-      fantasy: "판타지",
-      gaming: "게임",
-      movies: "영화",
-      tv: "TV 드라마",
-      comics: "만화",
-      music: "음악",
+      singer: "가수",
+      indie: "인디밴드",
+      trot: "트로트",
     } as Record<string, string>,
 
-    // Home
+    categoryEmojis: {
+      all: "🎵",
+      singer: "🎤",
+      indie: "🎸",
+      trot: "🌸",
+    } as Record<string, string>,
+
     feedFor: "추천",
     feedFollowing: "팔로잉",
     feedTrending: "인기",
-    noPostsTitle: "아직 게시글이 없습니다",
-    noPostsText: "팬덤에 가입하여 피드를 채워보세요",
-    exploreFandoms: "팬덤 탐색하기",
+    noPostsTitle: "아직 피드가 비어 있어요",
+    noPostsText: "좋아하는 아티스트를 팔로우하면 소식이 올라옵니다",
+    exploreFandoms: "아티스트 찾기",
 
-    // Explore
-    exploreTitle: "탐색",
-    exploreSubtitle: "커뮤니티를 찾아보세요",
-    searchPlaceholder: "팬덤 검색...",
-    noFandomTitle: "팬덤을 찾을 수 없습니다",
-    noFandomText: "다른 검색어 또는 카테고리를 시도해보세요",
+    liveNow: "🔴 LIVE",
+    artistPost: "아티스트",
+    officialMsg: "공식 메시지",
+    artistUpdate: "아티스트 업데이트",
+    fanLetter: "팬 레터",
+    directReply: "직접 답글",
+    followArtist: "팔로우",
+    followingArtist: "팔로잉",
 
-    // Notifications
+    exploreTitle: "아티스트 탐색",
+    exploreSubtitle: "좋아하는 아티스트와 직접 소통해보세요",
+    searchPlaceholder: "아티스트 검색...",
+    noFandomTitle: "아티스트를 찾을 수 없습니다",
+    noFandomText: "다른 검색어 또는 장르를 시도해보세요",
+
     notificationsTitle: "알림",
-    markAllRead: "전체 읽음 처리",
-    allCaughtUp: "모두 읽었습니다!",
-    noNewNotifs: "새로운 알림이 없습니다",
+    markAllRead: "전체 읽음",
+    allCaughtUp: "새 알림이 없습니다",
+    noNewNotifs: "알림이 없습니다",
+    artistActivity: "아티스트 활동",
 
-    // Profile
     profileTitle: "프로필",
     posts: "게시글",
     saved: "저장됨",
-    fandoms: "팬덤",
+    fandoms: "팔로잉",
     followers: "팔로워",
     following: "팔로잉",
-    saveProfile: "프로필 저장",
+    saveProfile: "저장",
     nicknamePlaceholder: "닉네임",
     bioPlaceholder: "자기소개",
     noPostsYet: "아직 게시글이 없습니다",
     noSavedPosts: "저장된 게시글이 없습니다",
-    noFandomsYet: "아직 가입한 팬덤이 없습니다",
+    noFandomsYet: "팔로우한 아티스트가 없습니다",
     logout: "로그아웃",
     languageLabel: "언어",
     logoutConfirm: "로그아웃 하시겠습니까?",
     cancel: "취소",
 
-    // Fandom detail
-    members: "멤버",
+    members: "팬",
     tagsLabel: "태그",
-    joinCommunity: "커뮤니티 가입",
-    fandomNotFound: "팬덤을 찾을 수 없습니다",
+    joinCommunity: "팔로우하기",
+    fandomNotFound: "아티스트를 찾을 수 없습니다",
     noPostsInFandom: "아직 게시글이 없습니다",
 
-    // Post detail
     commentsLabel: "댓글",
-    commentPlaceholder: "댓글 추가...",
+    commentPlaceholder: "아티스트에게 메시지 남기기...",
     postNotFound: "게시글을 찾을 수 없습니다",
-    firstComment: "아직 댓글이 없습니다. 첫 댓글을 달아보세요!",
+    firstComment: "첫 번째로 아티스트에게 메시지를 남겨보세요!",
 
-    // Follow button
     followingBtn: "팔로잉",
-    joinBtn: "가입",
+    joinBtn: "팔로우",
 
-    // Login
-    loginWelcome: "팬덤에 오신 것을\n환영합니다",
-    loginSubtitle: "좋아하는 팬덤을 함께 즐겨보세요",
+    loginWelcome: "스타링에\n오신 것을 환영합니다",
+    loginSubtitle: "아티스트와 팬이 직접 소통하는 공간",
     emailLabel: "이메일",
     passwordLabel: "비밀번호",
     confirmPasswordLabel: "비밀번호 확인",
@@ -98,7 +102,6 @@ const translations = {
     loginError: "이메일 또는 비밀번호가 올바르지 않습니다",
     passwordShort: "비밀번호는 6자 이상이어야 합니다",
 
-    // XP & Tier
     xpSystem: "XP 시스템",
     myXP: "내 경험치",
     fanTier: "팬 등급",
@@ -111,25 +114,24 @@ const translations = {
     xpForPost: "게시글 작성 +50 XP",
     xpForComment: "댓글 작성 +20 XP",
     xpForLike: "좋아요 +5 XP",
-    xpForJoin: "팬덤 가입 +30 XP",
+    xpForJoin: "아티스트 팔로우 +30 XP",
 
-    // Chon Network
     chonNetwork: "촌수 네트워크",
     firstDegree: "1촌",
     secondDegree: "2촌",
     chonConnected: "명의 팬과 연결됨",
     royalFans: "로열 팬",
 
-    // Announcement
-    announcementTitle: "📢 공지사항",
+    announcementTitle: "📢 스타링 오픈!",
     announcementContent:
-      "팬덤 앱에 오신 것을 환영합니다!\n\n새로운 기능이 추가되었습니다:\n• 팬덤 커뮤니티 가입 및 탈퇴\n• 게시글 좋아요 및 댓글\n• 알림 시스템\n\n앱 이용 중 불편한 점이 있으시면 프로필 > 의견 보내기를 통해 알려주세요. 더 나은 서비스를 위해 노력하겠습니다. 감사합니다!",
-    announcementClose: "확인",
+      "스타링에 오신 것을 환영합니다!\n\n스타링은 아티스트와 팬이 직접 소통하는 공간입니다:\n\n🎤 좋아하는 가수, 인디밴드, 트로트 아티스트를 팔로우하세요\n💌 아티스트의 공식 메시지를 가장 먼저 받아보세요\n🔴 라이브 방송 & 버스킹 즉각 알림\n💬 아티스트가 직접 댓글에 답글을 달아드려요\n\n지금 바로 좋아하는 아티스트를 찾아보세요!",
+    announcementClose: "시작하기",
     dontShowAgain: "다시 보지 않기",
   },
 
   en: {
-    appName: "Fandom",
+    appName: "Starling",
+    appTagline: "Direct connection between artists and fans",
 
     home: "Home",
     explore: "Explore",
@@ -138,66 +140,79 @@ const translations = {
 
     categories: {
       all: "All",
-      anime: "Anime",
-      fantasy: "Fantasy",
-      gaming: "Gaming",
-      movies: "Movies",
-      tv: "TV Shows",
-      comics: "Comics",
-      music: "Music",
+      singer: "Singers",
+      indie: "Indie Bands",
+      trot: "Trot",
+    } as Record<string, string>,
+
+    categoryEmojis: {
+      all: "🎵",
+      singer: "🎤",
+      indie: "🎸",
+      trot: "🌸",
     } as Record<string, string>,
 
     feedFor: "For You",
     feedFollowing: "Following",
     feedTrending: "Trending",
-    noPostsTitle: "Nothing here yet",
-    noPostsText: "Join some fandoms to see posts in your feed",
-    exploreFandoms: "Explore Fandoms",
+    noPostsTitle: "Your feed is empty",
+    noPostsText: "Follow your favorite artists to see their updates",
+    exploreFandoms: "Find Artists",
 
-    exploreTitle: "Explore",
-    exploreSubtitle: "Discover communities",
-    searchPlaceholder: "Search fandoms...",
-    noFandomTitle: "No fandoms found",
-    noFandomText: "Try a different search or category",
+    liveNow: "🔴 LIVE",
+    artistPost: "Artist",
+    officialMsg: "Official Message",
+    artistUpdate: "Artist Update",
+    fanLetter: "Fan Letter",
+    directReply: "Direct Reply",
+    followArtist: "Follow",
+    followingArtist: "Following",
+
+    exploreTitle: "Explore Artists",
+    exploreSubtitle: "Connect directly with your favorite artists",
+    searchPlaceholder: "Search artists...",
+    noFandomTitle: "No artists found",
+    noFandomText: "Try a different search or genre",
 
     notificationsTitle: "Notifications",
     markAllRead: "Mark all read",
     allCaughtUp: "All caught up!",
     noNewNotifs: "No new notifications",
+    artistActivity: "Artist Activity",
 
     profileTitle: "Profile",
     posts: "Posts",
     saved: "Saved",
-    fandoms: "Fandoms",
+    fandoms: "Following",
     followers: "Followers",
     following: "Following",
-    saveProfile: "Save Profile",
+    saveProfile: "Save",
     nicknamePlaceholder: "Display name",
     bioPlaceholder: "Bio",
     noPostsYet: "No posts yet",
     noSavedPosts: "No saved posts",
-    noFandomsYet: "No fandoms followed yet",
+    noFandomsYet: "Not following any artists",
     logout: "Log Out",
     languageLabel: "Language",
     logoutConfirm: "Are you sure you want to log out?",
     cancel: "Cancel",
 
-    members: "Members",
+    members: "Fans",
     tagsLabel: "Tags",
-    joinCommunity: "Join Community",
-    fandomNotFound: "Fandom not found",
-    noPostsInFandom: "No posts yet in this fandom",
+    joinCommunity: "Follow",
+    fandomNotFound: "Artist not found",
+    noPostsInFandom: "No posts yet",
 
     commentsLabel: "Comments",
-    commentPlaceholder: "Add a comment...",
+    commentPlaceholder: "Leave a message for the artist...",
     postNotFound: "Post not found",
-    firstComment: "No comments yet. Be the first!",
+    firstComment: "Be the first to message the artist!",
 
     followingBtn: "Following",
-    joinBtn: "Join",
+    joinBtn: "Follow",
 
-    loginWelcome: "Welcome to\nFandom",
-    loginSubtitle: "Enjoy your favorite fandoms together",
+    loginWelcome: "Welcome to\nStarling",
+    loginSubtitle: "Where artists and fans connect directly",
     emailLabel: "Email",
     passwordLabel: "Password",
     confirmPasswordLabel: "Confirm Password",
@@ -215,7 +230,6 @@ const translations = {
     loginError: "Invalid email or password",
     passwordShort: "Password must be at least 6 characters",
 
-    // XP & Tier
     xpSystem: "XP System",
     myXP: "My XP",
     fanTier: "Fan Tier",
@@ -228,19 +242,18 @@ const translations = {
     xpForPost: "Write a post +50 XP",
     xpForComment: "Write a comment +20 XP",
     xpForLike: "Like a post +5 XP",
-    xpForJoin: "Join a fandom +30 XP",
+    xpForJoin: "Follow an artist +30 XP",
 
-    // Chon Network
     chonNetwork: "Fan Network",
     firstDegree: "1st",
     secondDegree: "2nd",
     chonConnected: "fans connected",
     royalFans: "Royal fans",
 
-    announcementTitle: "📢 Announcement",
+    announcementTitle: "📢 Starling is Live!",
     announcementContent:
-      "Welcome to the Fandom App!\n\nNew features have been added:\n• Join and leave fandom communities\n• Like posts and leave comments\n• Notification system\n\nIf you encounter any issues, please let us know via Profile > Send Feedback. We're committed to improving your experience. Thank you!",
-    announcementClose: "Got it",
+      "Welcome to Starling!\n\nStarling is where artists and fans connect directly:\n\n🎤 Follow your favorite singers, indie bands, and trot artists\n💌 Get official messages from artists first\n🔴 Instant live & busking alerts\n💬 Artists reply directly to your comments\n\nFind your favorite artist now!",
+    announcementClose: "Get Started",
     dontShowAgain: "Don't show again",
   },
 } as const;

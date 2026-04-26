@@ -1,9 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
-  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -20,7 +19,7 @@ interface PostCardProps {
 }
 
 function formatCount(n: number): string {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+  if (n >= 10000) return (n / 10000).toFixed(1) + "만";
   if (n >= 1000) return (n / 1000).toFixed(1) + "K";
   return n.toString();
 }
@@ -43,198 +42,202 @@ export function PostCard({ post, compact = false }: PostCardProps) {
     toggleSave(post.id);
   };
 
-  const styles = makeStyles(colors);
+  const isArtist = post.isArtistPost === true;
 
   return (
     <Pressable
-      style={({ pressed }) => [styles.card, pressed && { opacity: 0.92 }]}
+      style={({ pressed }) => [{
+        backgroundColor: colors.card,
+        borderRadius: 18,
+        marginBottom: 12,
+        overflow: "hidden",
+        borderWidth: isArtist ? 1.5 : 1,
+        borderColor: isArtist ? colors.primary + "60" : colors.border,
+        opacity: pressed ? 0.92 : 1,
+      }]}
       onPress={() => router.push({ pathname: "/post/[id]", params: { id: post.id } })}
     >
-      <View style={styles.header}>
-        <View style={styles.fandomBadge}>
-          <Text style={styles.fandomBadgeText}>{post.fandomName}</Text>
-        </View>
-        <Text style={styles.timeAgo}>{post.timeAgo}</Text>
-      </View>
-
-      <View style={styles.authorRow}>
-        <View style={[styles.avatar, { backgroundColor: colors.primary + "33" }]}>
-          <Text style={[styles.avatarText, { color: colors.primary }]}>
-            {post.authorAvatar}
-          </Text>
-        </View>
-        <Text style={styles.authorName}>{post.authorName}</Text>
-      </View>
-
-      <Text style={styles.title} numberOfLines={compact ? 2 : 3}>
-        {post.title}
-      </Text>
-
-      {!compact && (
-        <Text style={styles.content} numberOfLines={3}>
-          {post.content}
-        </Text>
+      {/* Artist accent stripe */}
+      {isArtist && (
+        <View style={{ height: 3, backgroundColor: colors.primary }} />
       )}
 
-      {!compact && post.coverImage && (
-        <Image
-          source={post.coverImage}
-          style={styles.coverImage}
-          resizeMode="cover"
-        />
-      )}
-
-      {!compact && post.tags.length > 0 && (
-        <View style={styles.tags}>
-          {post.tags.map((tag) => (
-            <View key={tag} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
+      <View style={{ padding: 16 }}>
+        {/* Header row */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            {/* Avatar */}
+            <View style={[{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              alignItems: "center",
+              justifyContent: "center",
+            }, isArtist
+              ? { backgroundColor: colors.primary, borderWidth: 2, borderColor: colors.primary + "40" }
+              : { backgroundColor: colors.muted }
+            ]}>
+              <Text style={{
+                fontSize: 14,
+                fontWeight: "800",
+                color: isArtist ? "#ffffff" : colors.foreground,
+              }}>
+                {post.authorAvatar.slice(0, 2)}
+              </Text>
             </View>
-          ))}
+
+            <View>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Text style={{ fontSize: 14, fontWeight: "700", color: colors.foreground }}>
+                  {post.authorName}
+                </Text>
+                {isArtist && (
+                  <View style={{
+                    backgroundColor: colors.primary,
+                    borderRadius: 6,
+                    paddingHorizontal: 6,
+                    paddingVertical: 1,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 3,
+                  }}>
+                    <Feather name="check" size={9} color="#ffffff" />
+                    <Text style={{ fontSize: 10, color: "#ffffff", fontWeight: "700" }}>아티스트</Text>
+                  </View>
+                )}
+                {post.isLive && (
+                  <View style={{
+                    backgroundColor: "#ef4444",
+                    borderRadius: 6,
+                    paddingHorizontal: 6,
+                    paddingVertical: 1,
+                  }}>
+                    <Text style={{ fontSize: 10, color: "#ffffff", fontWeight: "800" }}>🔴 LIVE</Text>
+                  </View>
+                )}
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                <Text style={{ fontSize: 11, color: colors.mutedForeground }}>{post.fandomName}</Text>
+                <Text style={{ fontSize: 11, color: colors.border }}>·</Text>
+                <Text style={{ fontSize: 11, color: colors.mutedForeground }}>{post.timeAgo}</Text>
+              </View>
+            </View>
+          </View>
         </View>
-      )}
 
-      <View style={styles.footer}>
-        <Pressable style={styles.action} onPress={handleLike}>
-          <Feather
-            name="heart"
-            size={16}
-            color={isLiked ? colors.accent : colors.mutedForeground}
-          />
-          <Text
-            style={[
-              styles.actionText,
-              isLiked ? { color: colors.accent } : { color: colors.mutedForeground },
-            ]}
+        {/* Content */}
+        <Text style={{
+          fontSize: compact ? 15 : 16,
+          fontWeight: "700",
+          color: colors.foreground,
+          lineHeight: 23,
+          marginBottom: compact ? 0 : 8,
+        }} numberOfLines={compact ? 2 : 3}>
+          {post.title}
+        </Text>
+
+        {!compact && (
+          <Text style={{
+            fontSize: 14,
+            color: colors.mutedForeground,
+            lineHeight: 21,
+            marginBottom: 12,
+          }} numberOfLines={3}>
+            {post.content}
+          </Text>
+        )}
+
+        {/* Tags */}
+        {!compact && post.tags.length > 0 && (
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+            {post.tags.map((tag) => (
+              <View key={tag} style={{
+                backgroundColor: isArtist ? colors.primary + "15" : colors.muted,
+                paddingHorizontal: 9,
+                paddingVertical: 3,
+                borderRadius: 8,
+              }}>
+                <Text style={{
+                  fontSize: 11,
+                  color: isArtist ? colors.primary : colors.mutedForeground,
+                  fontWeight: "500",
+                }}>
+                  #{tag}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Actions */}
+        <View style={{
+          flexDirection: "row",
+          gap: 20,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          paddingTop: 12,
+          marginTop: compact ? 10 : 0,
+        }}>
+          <Pressable
+            style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+            onPress={handleLike}
           >
-            {formatCount(post.likes + (isLiked ? 1 : 0))}
-          </Text>
-        </Pressable>
+            <View style={[{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              alignItems: "center",
+              justifyContent: "center",
+            }, isLiked ? { backgroundColor: colors.accent + "20" } : { backgroundColor: colors.muted }]}>
+              <Feather
+                name="heart"
+                size={15}
+                color={isLiked ? colors.accent : colors.mutedForeground}
+              />
+            </View>
+            <Text style={{
+              fontSize: 13,
+              fontWeight: "600",
+              color: isLiked ? colors.accent : colors.mutedForeground,
+            }}>
+              {formatCount(post.likes + (isLiked ? 1 : 0))}
+            </Text>
+          </Pressable>
 
-        <Pressable
-          style={styles.action}
-          onPress={() => router.push({ pathname: "/post/[id]", params: { id: post.id } })}
-        >
-          <Feather name="message-circle" size={16} color={colors.mutedForeground} />
-          <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
-            {formatCount(post.comments)}
-          </Text>
-        </Pressable>
+          <Pressable
+            style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+            onPress={() => router.push({ pathname: "/post/[id]", params: { id: post.id } })}
+          >
+            <View style={{ width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: colors.muted }}>
+              <Feather name="message-circle" size={15} color={colors.mutedForeground} />
+            </View>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.mutedForeground }}>
+              {formatCount(post.comments)}
+            </Text>
+          </Pressable>
 
-        <Pressable style={styles.action} onPress={handleSave}>
-          <Feather
-            name="bookmark"
-            size={16}
-            color={isSaved ? colors.primary : colors.mutedForeground}
-          />
-        </Pressable>
+          <View style={{ flex: 1 }} />
+
+          <Pressable
+            style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+            onPress={handleSave}
+          >
+            <View style={[{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              alignItems: "center",
+              justifyContent: "center",
+            }, isSaved ? { backgroundColor: colors.primary + "20" } : { backgroundColor: colors.muted }]}>
+              <Feather
+                name="bookmark"
+                size={15}
+                color={isSaved ? colors.primary : colors.mutedForeground}
+              />
+            </View>
+          </Pressable>
+        </View>
       </View>
     </Pressable>
   );
 }
-
-const makeStyles = (colors: ReturnType<typeof useColors>) =>
-  StyleSheet.create({
-    card: {
-      backgroundColor: colors.card,
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 12,
-    },
-    header: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 10,
-    },
-    fandomBadge: {
-      backgroundColor: colors.primary + "22",
-      paddingHorizontal: 10,
-      paddingVertical: 3,
-      borderRadius: 20,
-    },
-    fandomBadgeText: {
-      fontSize: 11,
-      fontWeight: "600" as const,
-      color: colors.primary,
-    },
-    timeAgo: {
-      fontSize: 12,
-      color: colors.mutedForeground,
-    },
-    authorRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 10,
-      gap: 8,
-    },
-    avatar: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    avatarText: {
-      fontSize: 13,
-      fontWeight: "700" as const,
-    },
-    authorName: {
-      fontSize: 13,
-      fontWeight: "500" as const,
-      color: colors.mutedForeground,
-    },
-    title: {
-      fontSize: 16,
-      fontWeight: "700" as const,
-      color: colors.foreground,
-      marginBottom: 6,
-      lineHeight: 22,
-    },
-    content: {
-      fontSize: 14,
-      color: colors.mutedForeground,
-      lineHeight: 20,
-      marginBottom: 12,
-    },
-    coverImage: {
-      width: "100%",
-      height: 160,
-      borderRadius: 10,
-      marginBottom: 12,
-    },
-    tags: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 6,
-      marginBottom: 12,
-    },
-    tag: {
-      backgroundColor: colors.muted,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: 6,
-    },
-    tagText: {
-      fontSize: 11,
-      color: colors.mutedForeground,
-      fontWeight: "500" as const,
-    },
-    footer: {
-      flexDirection: "row",
-      gap: 16,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-      paddingTop: 10,
-      marginTop: 4,
-    },
-    action: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-    },
-    actionText: {
-      fontSize: 13,
-      fontWeight: "500" as const,
-    },
-  });

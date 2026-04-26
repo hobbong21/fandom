@@ -65,7 +65,7 @@ function WebSidebar({ navItems }: { navItems: NavItem[] }) {
       <View style={[styles.sidebarTop, { borderBottomColor: colors.border }]}>
         <View style={styles.sidebarBrand}>
           <View style={[styles.brandIcon, { backgroundColor: colors.primary }]}>
-            <Text style={styles.brandIconText}>★</Text>
+            <Text style={styles.brandIconText}>🎤</Text>
           </View>
           <Text style={[styles.brandName, { color: colors.primary }]}>{t.appName}</Text>
         </View>

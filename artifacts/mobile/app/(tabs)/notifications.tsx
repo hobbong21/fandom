@@ -4,8 +4,6 @@ import {
   FlatList,
   Platform,
   Pressable,
-  ScrollView,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -22,7 +20,9 @@ const NOTIF_ICONS: Record<Notification["type"], string> = {
   comment: "message-circle",
   follow: "user-plus",
   mention: "at-sign",
-  new_post: "bell",
+  new_post: "music",
+  artist_post: "star",
+  live: "radio",
 };
 
 const NOTIF_COLORS: Record<Notification["type"], string> = {
@@ -31,6 +31,18 @@ const NOTIF_COLORS: Record<Notification["type"], string> = {
   follow: "#34d399",
   mention: "#f59e0b",
   new_post: "#60a5fa",
+  artist_post: "#7c3aed",
+  live: "#ef4444",
+};
+
+const NOTIF_LABELS: Record<Notification["type"], string> = {
+  like: "좋아요",
+  comment: "댓글",
+  follow: "팔로우",
+  mention: "멘션",
+  new_post: "새 소식",
+  artist_post: "아티스트",
+  live: "LIVE",
 };
 
 export default function NotificationsScreen() {
@@ -39,53 +51,146 @@ export default function NotificationsScreen() {
   const { notifications, markAllRead, markRead, unreadCount } = useFandom();
   const { t } = useLanguage();
   const isWeb = Platform.OS === "web";
-  const styles = makeStyles(colors);
 
-  const renderItem = (item: Notification) => (
-    <Pressable
-      key={item.id}
-      style={[styles.item, !item.isRead && styles.itemUnread]}
-      onPress={() => markRead(item.id)}
-    >
-      <View style={[styles.iconWrap, { backgroundColor: NOTIF_COLORS[item.type] + "22" }]}>
-        <Feather name={NOTIF_ICONS[item.type] as any} size={18} color={NOTIF_COLORS[item.type]} />
-      </View>
-      <View style={styles.itemContent}>
-        <Text style={[styles.itemTitle, { color: colors.foreground }]}>{item.title}</Text>
-        {item.body.length > 0 && (
-          <Text style={[styles.itemBody, { color: colors.mutedForeground }]} numberOfLines={2}>
-            {item.body}
+  const renderItem = (item: Notification) => {
+    const iconColor = NOTIF_COLORS[item.type] ?? colors.primary;
+    const isArtistRelated = item.isArtist || item.type === "artist_post" || item.type === "live";
+
+    return (
+      <Pressable
+        key={item.id}
+        style={[{
+          flexDirection: "row",
+          alignItems: "flex-start",
+          padding: 14,
+          borderRadius: 16,
+          marginBottom: 8,
+          gap: 12,
+          borderWidth: 1,
+        }, item.isRead
+          ? { backgroundColor: colors.card, borderColor: colors.border }
+          : {
+            backgroundColor: isArtistRelated ? colors.primary + "0d" : colors.card,
+            borderColor: isArtistRelated ? colors.primary + "40" : colors.border,
+            borderLeftWidth: 3,
+            borderLeftColor: iconColor,
+          }
+        ]}
+        onPress={() => markRead(item.id)}
+      >
+        {/* Avatar or icon */}
+        <View style={{
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: iconColor + "22",
+          borderWidth: isArtistRelated ? 1.5 : 0,
+          borderColor: iconColor + "50",
+        }}>
+          {item.avatar.length <= 2 ? (
+            <Text style={{ fontSize: 15, fontWeight: "700", color: iconColor }}>
+              {item.avatar}
+            </Text>
+          ) : (
+            <Feather name={NOTIF_ICONS[item.type] as any} size={18} color={iconColor} />
+          )}
+        </View>
+
+        <View style={{ flex: 1, gap: 3 }}>
+          {/* Type badge for artist posts */}
+          {isArtistRelated && (
+            <View style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              marginBottom: 2,
+            }}>
+              <View style={{
+                backgroundColor: iconColor + "20",
+                borderRadius: 6,
+                paddingHorizontal: 7,
+                paddingVertical: 2,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 3,
+              }}>
+                <Feather name={NOTIF_ICONS[item.type] as any} size={9} color={iconColor} />
+                <Text style={{ fontSize: 10, color: iconColor, fontWeight: "700" }}>
+                  {NOTIF_LABELS[item.type]}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          <Text style={{ fontSize: 14, fontWeight: item.isRead ? "500" : "700", color: colors.foreground, lineHeight: 20 }}>
+            {item.title}
+          </Text>
+          {item.body.length > 0 && (
+            <Text style={{ fontSize: 13, color: colors.mutedForeground, lineHeight: 18 }} numberOfLines={2}>
+              {item.body}
+            </Text>
+          )}
+          <Text style={{ fontSize: 11, color: colors.mutedForeground, marginTop: 1 }}>{item.timeAgo}</Text>
+        </View>
+
+        {!item.isRead && (
+          <View style={{ width: 9, height: 9, borderRadius: 4.5, backgroundColor: iconColor, marginTop: 6 }} />
+        )}
+      </Pressable>
+    );
+  };
+
+  const headerSection = (padTop: number) => (
+    <View style={{
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingTop: padTop,
+      paddingBottom: 16,
+      backgroundColor: colors.background,
+      paddingHorizontal: isWeb ? 0 : 16,
+    }}>
+      <View>
+        <Text style={{ fontSize: 26, fontWeight: "900", color: colors.foreground, letterSpacing: -0.5 }}>
+          {t.notificationsTitle}
+        </Text>
+        {unreadCount > 0 && (
+          <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 1 }}>
+            읽지 않은 알림 <Text style={{ color: colors.primary, fontWeight: "700" }}>{unreadCount}</Text>개
           </Text>
         )}
-        <Text style={[styles.timeAgo, { color: colors.mutedForeground }]}>{item.timeAgo}</Text>
       </View>
-      {!item.isRead && <View style={[styles.dot, { backgroundColor: colors.primary }]} />}
-    </Pressable>
+      {unreadCount > 0 && (
+        <Pressable
+          style={{ backgroundColor: colors.primary + "18", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 }}
+          onPress={markAllRead}
+        >
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.primary }}>{t.markAllRead}</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+
+  const emptyComponent = (
+    <View style={{ alignItems: "center", paddingVertical: 80, gap: 12 }}>
+      <Text style={{ fontSize: 52 }}>🔔</Text>
+      <Text style={{ fontSize: 18, fontWeight: "700", color: colors.foreground }}>{t.allCaughtUp}</Text>
+      <Text style={{ fontSize: 14, color: colors.mutedForeground }}>{t.noNewNotifs}</Text>
+    </View>
   );
 
   if (isWeb) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.webScroll}>
-          <View style={styles.webInner}>
-            <View style={[styles.header, { paddingTop: 28 }]}>
-              <Text style={[styles.title, { color: colors.foreground }]}>{t.notificationsTitle}</Text>
-              {unreadCount > 0 && (
-                <Pressable style={[styles.markAllBtn, { backgroundColor: colors.muted }]} onPress={markAllRead}>
-                  <Text style={[styles.markAllText, { color: colors.primary }]}>{t.markAllRead}</Text>
-                </Pressable>
-              )}
-            </View>
-
-            {notifications.length === 0 ? (
-              <View style={styles.empty}>
-                <Feather name="bell" size={40} color={colors.mutedForeground} />
-                <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t.allCaughtUp}</Text>
-                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t.noNewNotifs}</Text>
-              </View>
-            ) : (
-              notifications.map(renderItem)
-            )}
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, overflowY: "auto" as any }}>
+          <View style={{ maxWidth: WEB_MAX_WIDTH, width: "100%", alignSelf: "center", paddingHorizontal: 20 }}>
+            {headerSection(28)}
+            {notifications.length === 0
+              ? emptyComponent
+              : notifications.map(renderItem)
+            }
             <View style={{ height: 40 }} />
           </View>
         </View>
@@ -94,79 +199,16 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <Text style={[styles.title, { color: colors.foreground }]}>{t.notificationsTitle}</Text>
-        {unreadCount > 0 && (
-          <Pressable style={[styles.markAllBtn, { backgroundColor: colors.muted }]} onPress={markAllRead}>
-            <Text style={[styles.markAllText, { color: colors.primary }]}>{t.markAllRead}</Text>
-          </Pressable>
-        )}
-      </View>
-
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <FlatList
         data={notifications}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 100 }}
+        ListHeaderComponent={headerSection(insets.top + 12)}
         renderItem={({ item }) => renderItem(item)}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Feather name="bell" size={40} color={colors.mutedForeground} />
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t.allCaughtUp}</Text>
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t.noNewNotifs}</Text>
-          </View>
-        }
+        ListEmptyComponent={emptyComponent}
       />
     </View>
   );
 }
-
-const makeStyles = (colors: ReturnType<typeof useColors>) =>
-  StyleSheet.create({
-    container: { flex: 1 },
-    webScroll: {
-      flex: 1,
-      overflowY: "auto" as any,
-    },
-    webInner: {
-      maxWidth: WEB_MAX_WIDTH,
-      width: "100%",
-      alignSelf: "center",
-      paddingHorizontal: 20,
-    },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingBottom: 14,
-      backgroundColor: colors.background,
-    },
-    title: { fontSize: 28, fontWeight: "800" as const, letterSpacing: -0.5 },
-    markAllBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-    markAllText: { fontSize: 13, fontWeight: "500" as const },
-    list: { paddingHorizontal: 16, paddingTop: 8 },
-    item: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      padding: 14,
-      borderRadius: 16,
-      marginBottom: 8,
-      backgroundColor: colors.card,
-      gap: 12,
-    },
-    itemUnread: {
-      backgroundColor: colors.primary + "11",
-      borderLeftWidth: 3,
-      borderLeftColor: colors.primary,
-    },
-    iconWrap: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-    itemContent: { flex: 1, gap: 3 },
-    itemTitle: { fontSize: 14, fontWeight: "600" as const, lineHeight: 19 },
-    itemBody: { fontSize: 13, lineHeight: 18 },
-    timeAgo: { fontSize: 12, marginTop: 2 },
-    dot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
-    empty: { alignItems: "center", paddingVertical: 80, gap: 10 },
-    emptyTitle: { fontSize: 18, fontWeight: "700" as const },
-    emptyText: { fontSize: 14 },
-  });

@@ -19,6 +19,64 @@ import { useColors } from "@/hooks/useColors";
 
 const WEB_MAX_WIDTH = 680;
 
+function LiveBanner({ colors, t }: { colors: any; t: any }) {
+  return (
+    <Pressable
+      style={{
+        marginBottom: 16,
+        borderRadius: 16,
+        overflow: "hidden",
+        backgroundColor: "#ef4444",
+      }}
+      onPress={() => {}}
+    >
+      <View style={{ padding: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={{
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: "rgba(255,255,255,0.2)",
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
+          <Text style={{ fontSize: 20 }}>잔</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
+            <View style={{ backgroundColor: "rgba(255,255,255,0.3)", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
+              <Text style={{ fontSize: 10, color: "#ffffff", fontWeight: "800" }}>🔴 LIVE</Text>
+            </View>
+            <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", fontWeight: "600" }}>잔나비</Text>
+          </View>
+          <Text style={{ fontSize: 14, color: "#ffffff", fontWeight: "700" }}>홍대 깜짝 버스킹 중!</Text>
+          <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>홍대 걷고싶은거리 · 지금 참여 가능</Text>
+        </View>
+        <View style={{ alignItems: "center" }}>
+          <Feather name="chevron-right" size={20} color="#ffffff" />
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+function SectionHeader({ title, subtitle, onPress, colors }: {
+  title: string; subtitle?: string; onPress?: () => void; colors: any;
+}) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
+      <View>
+        <Text style={{ fontSize: 18, fontWeight: "800", color: colors.foreground }}>{title}</Text>
+        {subtitle && <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 1 }}>{subtitle}</Text>}
+      </View>
+      {onPress && (
+        <Pressable onPress={onPress}>
+          <Text style={{ fontSize: 13, color: colors.primary, fontWeight: "600" }}>전체보기</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -27,7 +85,8 @@ export default function HomeScreen() {
   const [activeFilter, setActiveFilter] = useState(0);
 
   const feedFilters = [t.feedFor, t.feedFollowing, t.feedTrending];
-  const featuredFandoms = fandoms.slice(0, 4);
+  const followedArtists = fandoms.filter((f) => followedFandomIds.includes(f.id));
+  const featuredFandoms = fandoms.slice(0, 5);
   const isWeb = Platform.OS === "web";
 
   const filteredPosts =
@@ -35,110 +94,261 @@ export default function HomeScreen() {
       ? posts.filter((p) => followedFandomIds.includes(p.fandomId))
       : posts;
 
-  const styles = makeStyles(colors);
+  const artistPosts = posts.filter((p) => p.isArtistPost);
+  const shownPosts = activeFilter === 2 ? [...posts].sort((a, b) => b.likes - a.likes) : filteredPosts;
+
+  const content = (
+    <>
+      {/* Live banner */}
+      <LiveBanner colors={colors} t={t} />
+
+      {/* Following artists quick row */}
+      {followedArtists.length > 0 && (
+        <View style={{ marginBottom: 20 }}>
+          <SectionHeader
+            title="팔로잉 아티스트"
+            subtitle="최신 소식을 받고 있어요"
+            colors={colors}
+            onPress={() => router.push("/explore")}
+          />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 10 }}
+          >
+            {followedArtists.map((f) => (
+              <FandomCard key={f.id} fandom={f} variant="compact" />
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Featured artists horizontal */}
+      <View style={{ marginBottom: 20 }}>
+        <SectionHeader
+          title="🎤 아티스트 둘러보기"
+          subtitle="가수, 인디밴드, 트로트"
+          colors={colors}
+          onPress={() => router.push("/explore")}
+        />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 10 }}
+        >
+          {featuredFandoms.map((f) => (
+            <FandomCard key={f.id} fandom={f} variant="featured" />
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Artist direct posts callout */}
+      {artistPosts.length > 0 && activeFilter !== 1 && (
+        <View style={{ marginBottom: 20 }}>
+          <SectionHeader
+            title="💌 아티스트 직접 소식"
+            subtitle="아티스트가 직접 올린 메시지"
+            colors={colors}
+          />
+          {artistPosts.slice(0, 2).map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </View>
+      )}
+
+      {/* Feed filter */}
+      <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
+        {feedFilters.map((filter, i) => (
+          <Pressable
+            key={filter}
+            style={[{
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: 20,
+              borderWidth: 1.5,
+            }, activeFilter === i
+              ? { backgroundColor: colors.primary, borderColor: colors.primary }
+              : { backgroundColor: "transparent", borderColor: colors.border }
+            ]}
+            onPress={() => setActiveFilter(i)}
+          >
+            <Text style={{
+              fontSize: 14,
+              fontWeight: "600",
+              color: activeFilter === i ? colors.primaryForeground : colors.mutedForeground,
+            }}>
+              {filter}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {/* Feed title */}
+      <SectionHeader
+        title={activeFilter === 0 ? "🌟 모든 소식" : activeFilter === 1 ? "📡 팔로잉 소식" : "🔥 인기 소식"}
+        colors={colors}
+      />
+
+      {shownPosts.length === 0 ? (
+        <View style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}>
+          <Text style={{ fontSize: 48 }}>🎵</Text>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.foreground }}>{t.noPostsTitle}</Text>
+          <Text style={{ fontSize: 14, color: colors.mutedForeground, textAlign: "center", maxWidth: 240 }}>{t.noPostsText}</Text>
+          <Pressable
+            style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 20, marginTop: 8 }}
+            onPress={() => router.push("/explore")}
+          >
+            <Text style={{ color: colors.primaryForeground, fontWeight: "700", fontSize: 14 }}>{t.exploreFandoms}</Text>
+          </Pressable>
+        </View>
+      ) : (
+        shownPosts.map((item) => <PostCard key={item.id} post={item} />)
+      )}
+
+      <View style={{ height: 40 }} />
+    </>
+  );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       {isWeb ? (
-        <View style={styles.webScroll}>
-          <View style={styles.webInner}>
-            <View style={[styles.header, { paddingTop: 28 }]}>
-              <Text style={styles.logo}>{t.appName}</Text>
-              <Pressable style={styles.searchBtn} onPress={() => router.push("/explore")}>
-                <Feather name="search" size={20} color={colors.foreground} />
+        <View style={{ flex: 1, overflowY: "auto" as any }}>
+          <View style={{ maxWidth: WEB_MAX_WIDTH, width: "100%", alignSelf: "center", paddingHorizontal: 20 }}>
+            {/* Web header */}
+            <View style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingTop: 28,
+              paddingBottom: 20,
+            }}>
+              <View>
+                <Text style={{ fontSize: 28, fontWeight: "900", color: colors.primary, letterSpacing: -1 }}>
+                  {t.appName}
+                </Text>
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 1 }}>
+                  {(t as any).appTagline}
+                </Text>
+              </View>
+              <Pressable
+                style={{
+                  width: 40, height: 40, borderRadius: 20,
+                  backgroundColor: colors.muted,
+                  alignItems: "center", justifyContent: "center",
+                }}
+                onPress={() => router.push("/explore")}
+              >
+                <Feather name="search" size={18} color={colors.foreground} />
               </Pressable>
             </View>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.featured}
-              contentContainerStyle={styles.featuredContent}
-            >
-              {featuredFandoms.map((f) => (
-                <FandomCard key={f.id} fandom={f} variant="featured" />
-              ))}
-            </ScrollView>
-
-            <View style={styles.filterRow}>
-              {feedFilters.map((filter, i) => (
-                <Pressable
-                  key={filter}
-                  style={[styles.filterBtn, activeFilter === i && styles.filterBtnActive]}
-                  onPress={() => setActiveFilter(i)}
-                >
-                  <Text style={[styles.filterText, activeFilter === i && styles.filterTextActive]}>
-                    {filter}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            {filteredPosts.length === 0 ? (
-              <View style={styles.empty}>
-                <Feather name="rss" size={40} color={colors.mutedForeground} />
-                <Text style={styles.emptyTitle}>{t.noPostsTitle}</Text>
-                <Text style={styles.emptyText}>{t.noPostsText}</Text>
-                <Pressable style={styles.exploreBtn} onPress={() => router.push("/explore")}>
-                  <Text style={styles.exploreBtnText}>{t.exploreFandoms}</Text>
-                </Pressable>
-              </View>
-            ) : (
-              filteredPosts.map((item) => <PostCard key={item.id} post={item} />)
-            )}
-            <View style={{ height: 40 }} />
+            {content}
           </View>
         </View>
       ) : (
         <>
-          <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-            <Text style={styles.logo}>{t.appName}</Text>
-            <Pressable style={styles.searchBtn} onPress={() => router.push("/explore")}>
-              <Feather name="search" size={20} color={colors.foreground} />
+          <View style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingTop: insets.top + 12,
+            paddingBottom: 14,
+            paddingHorizontal: 16,
+            backgroundColor: colors.background,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+          }}>
+            <View>
+              <Text style={{ fontSize: 26, fontWeight: "900", color: colors.primary, letterSpacing: -0.8 }}>
+                {t.appName}
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.mutedForeground }}>
+                {(t as any).appTagline}
+              </Text>
+            </View>
+            <Pressable
+              style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: colors.muted, alignItems: "center", justifyContent: "center" }}
+              onPress={() => router.push("/explore")}
+            >
+              <Feather name="search" size={18} color={colors.foreground} />
             </Pressable>
           </View>
 
           <FlatList
-            data={filteredPosts}
+            data={shownPosts}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 100 }]}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 100 }}
             ListHeaderComponent={
-              <>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.featured}
-                  contentContainerStyle={styles.featuredContent}
-                >
-                  {featuredFandoms.map((f) => (
-                    <FandomCard key={f.id} fandom={f} variant="featured" />
-                  ))}
-                </ScrollView>
+              <View style={{ paddingTop: 16 }}>
+                <LiveBanner colors={colors} t={t} />
 
-                <View style={styles.filterRow}>
+                {followedArtists.length > 0 && (
+                  <View style={{ marginBottom: 20 }}>
+                    <SectionHeader title="팔로잉 아티스트" colors={colors} onPress={() => router.push("/explore")} />
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+                      {followedArtists.map((f) => (
+                        <FandomCard key={f.id} fandom={f} variant="compact" />
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+
+                <View style={{ marginBottom: 20 }}>
+                  <SectionHeader title="🎤 아티스트 둘러보기" colors={colors} onPress={() => router.push("/explore")} />
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+                    {featuredFandoms.map((f) => (
+                      <FandomCard key={f.id} fandom={f} variant="featured" />
+                    ))}
+                  </ScrollView>
+                </View>
+
+                {artistPosts.length > 0 && activeFilter !== 1 && (
+                  <View style={{ marginBottom: 20 }}>
+                    <SectionHeader title="💌 아티스트 직접 소식" colors={colors} />
+                    {artistPosts.slice(0, 2).map((post) => (
+                      <PostCard key={post.id} post={post} />
+                    ))}
+                  </View>
+                )}
+
+                <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
                   {feedFilters.map((filter, i) => (
                     <Pressable
                       key={filter}
-                      style={[styles.filterBtn, activeFilter === i && styles.filterBtnActive]}
+                      style={[{
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        borderRadius: 20,
+                        borderWidth: 1.5,
+                      }, activeFilter === i
+                        ? { backgroundColor: colors.primary, borderColor: colors.primary }
+                        : { backgroundColor: "transparent", borderColor: colors.border }
+                      ]}
                       onPress={() => setActiveFilter(i)}
                     >
-                      <Text style={[styles.filterText, activeFilter === i && styles.filterTextActive]}>
+                      <Text style={{ fontSize: 14, fontWeight: "600", color: activeFilter === i ? colors.primaryForeground : colors.mutedForeground }}>
                         {filter}
                       </Text>
                     </Pressable>
                   ))}
                 </View>
-              </>
+                <SectionHeader
+                  title={activeFilter === 0 ? "🌟 모든 소식" : activeFilter === 1 ? "📡 팔로잉 소식" : "🔥 인기 소식"}
+                  colors={colors}
+                />
+              </View>
             }
             renderItem={({ item }) => <PostCard post={item} />}
             ListEmptyComponent={
-              <View style={styles.empty}>
-                <Feather name="rss" size={40} color={colors.mutedForeground} />
-                <Text style={styles.emptyTitle}>{t.noPostsTitle}</Text>
-                <Text style={styles.emptyText}>{t.noPostsText}</Text>
-                <Pressable style={styles.exploreBtn} onPress={() => router.push("/explore")}>
-                  <Text style={styles.exploreBtnText}>{t.exploreFandoms}</Text>
+              <View style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}>
+                <Text style={{ fontSize: 48 }}>🎵</Text>
+                <Text style={{ fontSize: 18, fontWeight: "700", color: colors.foreground }}>{t.noPostsTitle}</Text>
+                <Text style={{ fontSize: 14, color: colors.mutedForeground, textAlign: "center", maxWidth: 240 }}>{t.noPostsText}</Text>
+                <Pressable
+                  style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 20, marginTop: 8 }}
+                  onPress={() => router.push("/explore")}
+                >
+                  <Text style={{ color: colors.primaryForeground, fontWeight: "700", fontSize: 14 }}>{t.exploreFandoms}</Text>
                 </Pressable>
               </View>
             }
@@ -148,63 +358,3 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-const makeStyles = (colors: ReturnType<typeof useColors>) =>
-  StyleSheet.create({
-    container: { flex: 1 },
-    webScroll: {
-      flex: 1,
-      overflowY: "auto" as any,
-    },
-    webInner: {
-      maxWidth: WEB_MAX_WIDTH,
-      width: "100%",
-      alignSelf: "center",
-      paddingHorizontal: 20,
-    },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingBottom: 16,
-      backgroundColor: colors.background,
-    },
-    logo: {
-      fontSize: 26,
-      fontWeight: "800" as const,
-      color: colors.primary,
-      letterSpacing: -0.5,
-    },
-    searchBtn: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: colors.muted,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    featured: { marginBottom: 16 },
-    featuredContent: { gap: 10 },
-    filterRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
-    filterBtn: {
-      paddingHorizontal: 16,
-      paddingVertical: 7,
-      borderRadius: 20,
-      backgroundColor: colors.muted,
-    },
-    filterBtnActive: { backgroundColor: colors.primary },
-    filterText: { fontSize: 14, fontWeight: "500" as const, color: colors.mutedForeground },
-    filterTextActive: { color: colors.primaryForeground },
-    list: { paddingHorizontal: 16 },
-    empty: { alignItems: "center", paddingVertical: 60, gap: 10 },
-    emptyTitle: { fontSize: 18, fontWeight: "700" as const, color: colors.foreground },
-    emptyText: { fontSize: 14, color: colors.mutedForeground, textAlign: "center", maxWidth: 240 },
-    exploreBtn: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 24,
-      paddingVertical: 10,
-      borderRadius: 20,
-      marginTop: 8,
-    },
-    exploreBtnText: { color: colors.primaryForeground, fontWeight: "600" as const, fontSize: 14 },
-  });

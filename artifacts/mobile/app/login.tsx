@@ -107,8 +107,8 @@ export default function LoginScreen() {
         >
           {/* Logo area */}
           <View style={styles.logoArea}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoEmoji}>⭐</Text>
+            <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
+              <Text style={styles.logoEmoji}>🎤</Text>
             </View>
             <Text style={styles.appName}>{t.appName}</Text>
             <Text style={styles.welcomeText}>{t.loginWelcome}</Text>

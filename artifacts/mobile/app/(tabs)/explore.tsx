@@ -5,7 +5,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -33,78 +32,115 @@ export default function ExploreScreen() {
     const matchSearch =
       search.length === 0 ||
       f.name.toLowerCase().includes(q) ||
+      f.artistName.toLowerCase().includes(q) ||
       f.description.toLowerCase().includes(q) ||
       f.tags.some((tag) => tag.toLowerCase().includes(q));
     const matchCat = activeCategory === "all" || f.category === activeCategory;
     return matchSearch && matchCat;
   });
 
-  const styles = makeStyles(colors);
+  const header = (padTop: number) => (
+    <View style={{ backgroundColor: colors.background, paddingTop: padTop, paddingBottom: 0 }}>
+      {/* Title */}
+      <View style={{ paddingHorizontal: isWeb ? 0 : 16, paddingBottom: 14 }}>
+        <Text style={{ fontSize: 26, fontWeight: "900", color: colors.foreground, letterSpacing: -0.5, marginBottom: 3 }}>
+          {t.exploreTitle}
+        </Text>
+        <Text style={{ fontSize: 14, color: colors.mutedForeground }}>{t.exploreSubtitle}</Text>
+      </View>
+
+      {/* Search bar */}
+      <View style={[{
+        flexDirection: "row",
+        alignItems: "center",
+        borderRadius: 16,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        gap: 10,
+        marginBottom: 14,
+        backgroundColor: colors.muted,
+      }, !isWeb && { marginHorizontal: 16 }]}>
+        <Feather name="search" size={18} color={colors.mutedForeground} />
+        <TextInput
+          style={{ flex: 1, fontSize: 15, color: colors.foreground }}
+          placeholder={t.searchPlaceholder}
+          placeholderTextColor={colors.mutedForeground}
+          value={search}
+          onChangeText={setSearch}
+          returnKeyType="search"
+        />
+        {search.length > 0 && (
+          <Pressable onPress={() => setSearch("")}>
+            <Feather name="x" size={16} color={colors.mutedForeground} />
+          </Pressable>
+        )}
+      </View>
+
+      {/* Genre filter pills */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: isWeb ? 0 : 16, gap: 8, paddingBottom: 14 }}
+      >
+        {CATEGORIES.map((cat) => {
+          const active = activeCategory === cat.id;
+          return (
+            <Pressable
+              key={cat.id}
+              style={[{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                paddingHorizontal: 16,
+                paddingVertical: 9,
+                borderRadius: 20,
+                borderWidth: 1.5,
+              }, active
+                ? { backgroundColor: colors.primary, borderColor: colors.primary }
+                : { backgroundColor: "transparent", borderColor: colors.border }
+              ]}
+              onPress={() => setActiveCategory(cat.id)}
+            >
+              <Text style={{ fontSize: 14 }}>{cat.emoji}</Text>
+              <Text style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: active ? colors.primaryForeground : colors.mutedForeground,
+              }}>
+                {t.categories[cat.id] ?? cat.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
+      {/* Count */}
+      <View style={{ paddingHorizontal: isWeb ? 0 : 16, paddingBottom: 6 }}>
+        <Text style={{ fontSize: 13, color: colors.mutedForeground }}>
+          아티스트 <Text style={{ color: colors.foreground, fontWeight: "700" }}>{filtered.length}</Text>명
+        </Text>
+      </View>
+    </View>
+  );
+
+  const emptyComponent = (
+    <View style={{ alignItems: "center", paddingVertical: 60, gap: 14 }}>
+      <Text style={{ fontSize: 48 }}>🎵</Text>
+      <Text style={{ fontSize: 18, fontWeight: "700", color: colors.foreground }}>{t.noFandomTitle}</Text>
+      <Text style={{ fontSize: 14, color: colors.mutedForeground, textAlign: "center" }}>{t.noFandomText}</Text>
+    </View>
+  );
 
   if (isWeb) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.webScroll}>
-          <View style={styles.webInner}>
-            <View style={[styles.header, { paddingTop: 28 }]}>
-              <Text style={styles.title}>{t.exploreTitle}</Text>
-              <Text style={styles.subtitle}>{t.exploreSubtitle}</Text>
-              <View style={[styles.searchBar, { backgroundColor: colors.muted }]}>
-                <Feather name="search" size={18} color={colors.mutedForeground} />
-                <TextInput
-                  style={[styles.searchInput, { color: colors.foreground }]}
-                  placeholder={t.searchPlaceholder}
-                  placeholderTextColor={colors.mutedForeground}
-                  value={search}
-                  onChangeText={setSearch}
-                  returnKeyType="search"
-                />
-                {search.length > 0 && (
-                  <Pressable onPress={() => setSearch("")}>
-                    <Feather name="x" size={16} color={colors.mutedForeground} />
-                  </Pressable>
-                )}
-              </View>
-            </View>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.categories}
-              contentContainerStyle={styles.categoriesContent}
-            >
-              {CATEGORIES.map((cat) => (
-                <Pressable
-                  key={cat.id}
-                  style={[
-                    styles.catBtn,
-                    { backgroundColor: colors.muted },
-                    activeCategory === cat.id && styles.catBtnActive,
-                  ]}
-                  onPress={() => setActiveCategory(cat.id)}
-                >
-                  <Text
-                    style={[
-                      styles.catText,
-                      { color: colors.mutedForeground },
-                      activeCategory === cat.id && styles.catTextActive,
-                    ]}
-                  >
-                    {t.categories[cat.id] ?? cat.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-
-            {filtered.length === 0 ? (
-              <View style={styles.empty}>
-                <Feather name="compass" size={40} color={colors.mutedForeground} />
-                <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t.noFandomTitle}</Text>
-                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t.noFandomText}</Text>
-              </View>
-            ) : (
-              filtered.map((item) => <FandomCard key={item.id} fandom={item} />)
-            )}
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, overflowY: "auto" as any }}>
+          <View style={{ maxWidth: WEB_MAX_WIDTH, width: "100%", alignSelf: "center", paddingHorizontal: 20 }}>
+            {header(28)}
+            {filtered.length === 0
+              ? emptyComponent
+              : filtered.map((item) => <FandomCard key={item.id} fandom={item} />)
+            }
             <View style={{ height: 40 }} />
           </View>
         </View>
@@ -113,111 +149,16 @@ export default function ExploreScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <Text style={styles.title}>{t.exploreTitle}</Text>
-        <Text style={styles.subtitle}>{t.exploreSubtitle}</Text>
-        <View style={[styles.searchBar, { backgroundColor: colors.muted }]}>
-          <Feather name="search" size={18} color={colors.mutedForeground} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.foreground }]}
-            placeholder={t.searchPlaceholder}
-            placeholderTextColor={colors.mutedForeground}
-            value={search}
-            onChangeText={setSearch}
-            returnKeyType="search"
-          />
-          {search.length > 0 && (
-            <Pressable onPress={() => setSearch("")}>
-              <Feather name="x" size={16} color={colors.mutedForeground} />
-            </Pressable>
-          )}
-        </View>
-      </View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categories}
-        contentContainerStyle={styles.categoriesContent}
-      >
-        {CATEGORIES.map((cat) => (
-          <Pressable
-            key={cat.id}
-            style={[
-              styles.catBtn,
-              { backgroundColor: colors.muted },
-              activeCategory === cat.id && styles.catBtnActive,
-            ]}
-            onPress={() => setActiveCategory(cat.id)}
-          >
-            <Text
-              style={[
-                styles.catText,
-                { color: colors.mutedForeground },
-                activeCategory === cat.id && styles.catTextActive,
-              ]}
-            >
-              {t.categories[cat.id] ?? cat.label}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 100 }}
+        ListHeaderComponent={header(insets.top + 12)}
         renderItem={({ item }) => <FandomCard fandom={item} />}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Feather name="compass" size={40} color={colors.mutedForeground} />
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t.noFandomTitle}</Text>
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t.noFandomText}</Text>
-          </View>
-        }
+        ListEmptyComponent={emptyComponent}
       />
     </View>
   );
 }
-
-const makeStyles = (colors: ReturnType<typeof useColors>) =>
-  StyleSheet.create({
-    container: { flex: 1 },
-    webScroll: {
-      flex: 1,
-      overflowY: "auto" as any,
-    },
-    webInner: {
-      maxWidth: WEB_MAX_WIDTH,
-      width: "100%",
-      alignSelf: "center",
-      paddingHorizontal: 20,
-    },
-    header: {
-      paddingBottom: 14,
-      backgroundColor: colors.background,
-    },
-    title: { fontSize: 28, fontWeight: "800" as const, color: colors.foreground, letterSpacing: -0.5 },
-    subtitle: { fontSize: 14, color: colors.mutedForeground, marginBottom: 14, marginTop: 2 },
-    searchBar: {
-      flexDirection: "row",
-      alignItems: "center",
-      borderRadius: 14,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-      gap: 10,
-    },
-    searchInput: { flex: 1, fontSize: 15 },
-    categories: { maxHeight: 48, marginBottom: 6 },
-    categoriesContent: { paddingHorizontal: 16, gap: 8, alignItems: "center" },
-    catBtn: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20 },
-    catBtnActive: { backgroundColor: colors.primary },
-    catText: { fontSize: 14, fontWeight: "500" as const },
-    catTextActive: { color: colors.primaryForeground },
-    list: { paddingHorizontal: 16, paddingTop: 12 },
-    empty: { alignItems: "center", paddingVertical: 60, gap: 10 },
-    emptyTitle: { fontSize: 18, fontWeight: "700" as const },
-    emptyText: { fontSize: 14, textAlign: "center" },
-  });
