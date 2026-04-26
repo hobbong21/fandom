@@ -8,21 +8,18 @@ const { authenticate } = require('../middleware/auth');
 const router = express.Router();
 const SALT_ROUNDS = 10;
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later' },
-});
+function createLimiter(max) {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later' },
+  });
+}
 
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later' },
-});
+const authLimiter = createLimiter(20);
+const apiLimiter = createLimiter(100);
 
 router.post('/register', authLimiter, async (req, res) => {
   const { username, password } = req.body;
