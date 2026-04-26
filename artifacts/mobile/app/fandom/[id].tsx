@@ -18,6 +18,7 @@ import { ArtistAvatar } from "@/components/ArtistAvatar";
 import { PostCard } from "@/components/PostCard";
 import { useAuth } from "@/context/AuthContext";
 import { useChat, type ChatMessage } from "@/context/ChatContext";
+import { useStore } from "@/context/StoreContext";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useXP } from "@/context/XPContext";
@@ -25,7 +26,7 @@ import { useColors } from "@/hooks/useColors";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { Fandom } from "@/constants/data";
 
-type Tab = "intro" | "news" | "fans" | "chat";
+type Tab = "intro" | "news" | "fans" | "store" | "chat";
 
 function formatCount(n: number): string {
   if (n >= 10000) return (n / 10000).toFixed(1) + "만";
@@ -197,6 +198,237 @@ function ChatTabContent({ fandomId, fandom }: { fandomId: string; fandom: Fandom
   );
 }
 
+function StoreTabContent({ fandomId, fandom }: { fandomId: string; fandom: Fandom }) {
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const isDesktop = useIsDesktop();
+  const { getProductsByFandom, addToCart, cart, cartCount } = useStore();
+  const [showCart, setShowCart] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [activeType, setActiveType] = useState<"all" | "album" | "goods">("all");
+
+  const products = getProductsByFandom(fandomId);
+  const filtered = activeType === "all" ? products : products.filter((p) => p.type === activeType);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2000);
+  };
+
+  const handleAdd = (productId: string, name: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    addToCart(productId);
+    showToast(`🛒 "${name}" 장바구니에 추가!`);
+  };
+
+  const BADGE_COLORS: Record<string, string> = {
+    "신상품": "#10b981", "한정판": "#f59e0b", "인기": "#ef4444", "품절임박": "#6b7280",
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      {/* Filter bar */}
+      <View style={{ flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        {(["all", "album", "goods"] as const).map((type) => (
+          <Pressable
+            key={type}
+            style={{
+              paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20,
+              backgroundColor: activeType === type ? fandom.color : colors.muted,
+            }}
+            onPress={() => setActiveType(type)}
+          >
+            <Text style={{ fontSize: 13, fontWeight: "600", color: activeType === type ? "#fff" : colors.mutedForeground }}>
+              {type === "all" ? "전체" : type === "album" ? "💿 음반" : "🎁 굿즈"}
+            </Text>
+          </Pressable>
+        ))}
+        {cartCount > 0 && (
+          <Pressable
+            style={{ marginLeft: "auto", flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, backgroundColor: fandom.color }}
+            onPress={() => setShowCart(true)}
+          >
+            <Feather name="shopping-cart" size={14} color="#fff" />
+            <Text style={{ fontSize: 13, fontWeight: "700", color: "#fff" }}>{cartCount}</Text>
+          </Pressable>
+        )}
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: isDesktop ? 40 : insets.bottom + 80 }}>
+        {filtered.map((product) => {
+          const inCart = cart.find((c) => c.productId === product.id);
+          return (
+            <View key={product.id} style={{
+              backgroundColor: colors.card,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+              overflow: "hidden",
+            }}>
+              {/* Product header */}
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 14, padding: 16 }}>
+                <View style={{
+                  width: 60, height: 60, borderRadius: 12,
+                  backgroundColor: fandom.color + "18",
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  <Text style={{ fontSize: 30 }}>{product.emoji}</Text>
+                </View>
+                <View style={{ flex: 1, gap: 4 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    {product.badge && (
+                      <View style={{ backgroundColor: BADGE_COLORS[product.badge] + "22", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                        <Text style={{ fontSize: 10, fontWeight: "700", color: BADGE_COLORS[product.badge] }}>{product.badge}</Text>
+                      </View>
+                    )}
+                    <Text style={{ fontSize: 11, color: colors.mutedForeground }}>{product.type === "album" ? "음반" : "굿즈"}</Text>
+                  </View>
+                  <Text style={{ fontSize: 15, fontWeight: "700", color: colors.foreground }}>{product.name}</Text>
+                  <Text style={{ fontSize: 12, color: colors.mutedForeground, lineHeight: 17 }}>{product.description}</Text>
+                </View>
+              </View>
+              {/* Price + CTA */}
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 14 }}>
+                <View style={{ gap: 2 }}>
+                  {product.originalPrice && (
+                    <Text style={{ fontSize: 11, color: colors.mutedForeground, textDecorationLine: "line-through" }}>
+                      ₩{product.originalPrice.toLocaleString()}
+                    </Text>
+                  )}
+                  <Text style={{ fontSize: 18, fontWeight: "800", color: fandom.color }}>
+                    ₩{product.price.toLocaleString()}
+                  </Text>
+                </View>
+                <Pressable
+                  style={({ pressed }) => [{
+                    flexDirection: "row", alignItems: "center", gap: 6,
+                    paddingHorizontal: 18, paddingVertical: 10, borderRadius: 24,
+                    backgroundColor: inCart ? colors.muted : fandom.color,
+                    opacity: pressed ? 0.8 : 1,
+                  }]}
+                  onPress={() => handleAdd(product.id, product.name)}
+                >
+                  <Feather name={inCart ? "check" : "shopping-cart"} size={14} color={inCart ? colors.mutedForeground : "#fff"} />
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: inCart ? colors.mutedForeground : "#fff" }}>
+                    {inCart ? `담음 (${inCart.quantity})` : "담기"}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          );
+        })}
+        {filtered.length === 0 && (
+          <View style={{ alignItems: "center", padding: 40, gap: 10 }}>
+            <Text style={{ fontSize: 36 }}>🛍️</Text>
+            <Text style={{ fontSize: 15, fontWeight: "600", color: colors.mutedForeground }}>준비 중입니다</Text>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Cart Sheet */}
+      {showCart && <CartSheet fandom={fandom} onClose={() => setShowCart(false)} />}
+
+      {/* Toast */}
+      {toast && (
+        <View style={{ position: "absolute", bottom: isDesktop ? 20 : insets.bottom + 90, left: 20, right: 20, backgroundColor: "#1a1a2e", borderRadius: 12, padding: 14, alignItems: "center" }}>
+          <Text style={{ color: "#fff", fontSize: 13, fontWeight: "600" }}>{toast}</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+function CartSheet({ fandom, onClose }: { fandom: Fandom; onClose: () => void }) {
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const isDesktop = useIsDesktop();
+  const { cart, cartTotal, getProductById, updateQuantity, removeFromCart, checkout, clearCart } = useStore();
+  const [checking, setChecking] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    setChecking(true);
+    try {
+      await checkout();
+      setDone(true);
+      setTimeout(() => { setDone(false); onClose(); }, 2000);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.6)", alignItems: "center", justifyContent: "center" }}>
+        <View style={{ backgroundColor: colors.card, borderRadius: 20, padding: 32, alignItems: "center", gap: 12, margin: 20 }}>
+          <Text style={{ fontSize: 48 }}>🎉</Text>
+          <Text style={{ fontSize: 20, fontWeight: "800", color: colors.foreground }}>주문 완료!</Text>
+          <Text style={{ fontSize: 14, color: colors.mutedForeground, textAlign: "center" }}>
+            주문이 성공적으로 접수되었습니다.{"\n"}빠르게 배송해드릴게요!
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
+      <Pressable style={StyleSheet.absoluteFillObject} onPress={onClose} />
+      <View style={{ backgroundColor: colors.background, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "80%", paddingBottom: isDesktop ? 20 : insets.bottom + 10 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 20, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+          <Text style={{ fontSize: 18, fontWeight: "800", color: colors.foreground }}>🛒 장바구니</Text>
+          <Pressable onPress={onClose}><Feather name="x" size={22} color={colors.mutedForeground} /></Pressable>
+        </View>
+        <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+          {cart.length === 0 ? (
+            <View style={{ alignItems: "center", padding: 32, gap: 8 }}>
+              <Text style={{ fontSize: 32 }}>🛒</Text>
+              <Text style={{ color: colors.mutedForeground, fontSize: 14 }}>장바구니가 비어있습니다</Text>
+            </View>
+          ) : cart.map((item) => {
+            const product = getProductById(item.productId);
+            if (!product) return null;
+            return (
+              <View key={item.productId} style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <Text style={{ fontSize: 28 }}>{product.emoji}</Text>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={{ fontSize: 14, fontWeight: "600", color: colors.foreground }}>{product.name}</Text>
+                  <Text style={{ fontSize: 13, color: fandom.color, fontWeight: "700" }}>₩{(product.price * item.quantity).toLocaleString()}</Text>
+                </View>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: colors.muted, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 }}>
+                  <Pressable onPress={() => item.quantity <= 1 ? removeFromCart(item.productId) : updateQuantity(item.productId, item.quantity - 1)}>
+                    <Feather name={item.quantity <= 1 ? "trash-2" : "minus"} size={14} color={colors.mutedForeground} />
+                  </Pressable>
+                  <Text style={{ fontSize: 14, fontWeight: "700", color: colors.foreground, minWidth: 16, textAlign: "center" }}>{item.quantity}</Text>
+                  <Pressable onPress={() => updateQuantity(item.productId, item.quantity + 1)}>
+                    <Feather name="plus" size={14} color={colors.mutedForeground} />
+                  </Pressable>
+                </View>
+              </View>
+            );
+          })}
+        </ScrollView>
+        {cart.length > 0 && (
+          <View style={{ padding: 16, gap: 12, borderTopWidth: 1, borderTopColor: colors.border }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.foreground }}>합계</Text>
+              <Text style={{ fontSize: 18, fontWeight: "800", color: fandom.color }}>₩{cartTotal.toLocaleString()}</Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => [{ backgroundColor: fandom.color, borderRadius: 16, padding: 16, alignItems: "center", opacity: pressed || checking ? 0.8 : 1 }]}
+              onPress={handleCheckout}
+              disabled={checking}
+            >
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "800" }}>{checking ? "처리 중..." : "결제하기"}</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
 export default function ArtistDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const colors = useColors();
@@ -235,6 +467,7 @@ export default function ArtistDetailScreen() {
     intro: "소개",
     news: `소식 ${artistPosts.length > 0 ? `(${artistPosts.length})` : ""}`,
     fans: `팬게시판 ${fanPosts.length > 0 ? `(${fanPosts.length})` : ""}`,
+    store: "🛍️ 스토어",
     chat: "💬 채팅",
   };
 
@@ -397,7 +630,7 @@ export default function ArtistDetailScreen() {
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     }}>
-      {(["intro", "news", "fans", "chat"] as Tab[]).map((tab) => (
+      {(["intro", "news", "fans", "store", "chat"] as Tab[]).map((tab) => (
         <Pressable
           key={tab}
           style={{
@@ -673,28 +906,28 @@ export default function ArtistDetailScreen() {
     </View>
   );
 
-  if (activeTab === "chat") {
+  if (activeTab === "store" || activeTab === "chat") {
+    const subtitle = activeTab === "store" ? "굿즈 · 음반 스토어" : "실시간 채팅방";
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <View>
-          <View style={{ backgroundColor: fandom.color, paddingTop: isWeb ? 16 : insets.top + 10, paddingBottom: 0 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingBottom: 14 }}>
-              <Pressable
-                style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: "rgba(0,0,0,0.25)", alignItems: "center", justifyContent: "center" }}
-                onPress={() => router.back()}
-              >
-                <Feather name="arrow-left" size={18} color="#fff" />
-              </Pressable>
-              <ArtistAvatar avatarUrl={fandom.avatarUrl} emoji={fandom.emoji} size={36} backgroundColor="rgba(255,255,255,0.2)" />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 15, fontWeight: "800", color: "#fff" }}>{fandom.artistName}</Text>
-                <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.75)" }}>실시간 채팅방</Text>
-              </View>
+        <View style={{ backgroundColor: fandom.color, paddingTop: isWeb ? 16 : insets.top + 10 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingBottom: 14 }}>
+            <Pressable
+              style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: "rgba(0,0,0,0.25)", alignItems: "center", justifyContent: "center" }}
+              onPress={() => router.back()}
+            >
+              <Feather name="arrow-left" size={18} color="#fff" />
+            </Pressable>
+            <ArtistAvatar avatarUrl={fandom.avatarUrl} emoji={fandom.emoji} size={36} backgroundColor="rgba(255,255,255,0.2)" />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, fontWeight: "800", color: "#fff" }}>{fandom.artistName}</Text>
+              <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.75)" }}>{subtitle}</Text>
             </View>
-            {tabBar}
           </View>
+          {tabBar}
         </View>
-        <ChatTabContent fandomId={id ?? ""} fandom={fandom} />
+        {activeTab === "store" && <StoreTabContent fandomId={id ?? ""} fandom={fandom} />}
+        {activeTab === "chat" && <ChatTabContent fandomId={id ?? ""} fandom={fandom} />}
       </View>
     );
   }
