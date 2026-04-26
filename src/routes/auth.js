@@ -16,6 +16,14 @@ const authLimiter = rateLimit({
   message: { error: 'Too many requests, please try again later' },
 });
 
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+});
+
 router.post('/register', authLimiter, async (req, res) => {
   const { username, password } = req.body;
   const trimmedUsername = typeof username === 'string' ? username.trim() : '';
@@ -39,12 +47,13 @@ router.post('/register', authLimiter, async (req, res) => {
 
 router.post('/login', authLimiter, async (req, res) => {
   const { username, password } = req.body;
+  const trimmedUsername = typeof username === 'string' ? username.trim() : '';
 
-  if (!username || !password) {
+  if (!trimmedUsername || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
-  const user = User.findByUsername(username);
+  const user = User.findByUsername(trimmedUsername);
   if (!user) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
@@ -58,7 +67,7 @@ router.post('/login', authLimiter, async (req, res) => {
   return res.json({ token });
 });
 
-router.get('/me', authenticate, (req, res) => {
+router.get('/me', apiLimiter, authenticate, (req, res) => {
   return res.json({ username: req.user.username });
 });
 
