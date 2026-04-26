@@ -57,14 +57,14 @@ export default function FandomDetailScreen() {
       keyExtractor={(item) => item.id}
       showsVerticalScrollIndicator={false}
       style={{ backgroundColor: colors.background }}
-      contentContainerStyle={{ paddingBottom: isWeb ? 34 : insets.bottom + 100 }}
+      contentContainerStyle={{ paddingBottom: isWeb ? 24 : insets.bottom + 100 }}
       ListHeaderComponent={
         <>
           <View style={styles.hero}>
             <Image source={fandom.coverImage} style={styles.heroImage} resizeMode="cover" />
             <View style={styles.heroOverlay} />
             <Pressable
-              style={[styles.backBtn, { top: isWeb ? 67 : insets.top + 12 }]}
+              style={[styles.backBtn, { top: isWeb ? 20 : insets.top + 12 }]}
               onPress={() => router.back()}
             >
               <Feather name="arrow-left" size={20} color="#ffffff" />

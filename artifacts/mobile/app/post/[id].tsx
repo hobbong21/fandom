@@ -106,7 +106,7 @@ export default function PostDetailScreen() {
         contentContainerStyle={{ paddingBottom: 20 }}
         ListHeaderComponent={
           <>
-            <View style={[styles.header, { paddingTop: isWeb ? 67 : insets.top + 12 }]}>
+            <View style={[styles.header, { paddingTop: isWeb ? 20 : insets.top + 12 }]}>
               <Pressable style={styles.backBtn} onPress={() => router.back()}>
                 <Feather name="arrow-left" size={20} color={colors.foreground} />
               </Pressable>
@@ -193,7 +193,7 @@ export default function PostDetailScreen() {
         }
       />
 
-      <View style={[styles.inputBar, { paddingBottom: isWeb ? 34 : insets.bottom + 8 }]}>
+      <View style={[styles.inputBar, { paddingBottom: isWeb ? 12 : insets.bottom + 8 }]}>
         <TextInput
           style={[styles.commentInput, { color: colors.foreground, borderColor: colors.border }]}
           placeholder={t.commentPlaceholder}

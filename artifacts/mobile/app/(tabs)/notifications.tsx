@@ -40,7 +40,7 @@ export default function NotificationsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: isWeb ? 67 : insets.top + 12 }]}>
+      <View style={[styles.header, { paddingTop: isWeb ? 20 : insets.top + 12 }]}>
         <Text style={styles.title}>{t.notificationsTitle}</Text>
         {unreadCount > 0 && (
           <Pressable style={styles.markAllBtn} onPress={markAllRead}>
@@ -55,7 +55,7 @@ export default function NotificationsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.list,
-          { paddingBottom: isWeb ? 34 : insets.bottom + 100 },
+          { paddingBottom: isWeb ? 24 : insets.bottom + 100 },
         ]}
         renderItem={({ item }) => (
           <Pressable

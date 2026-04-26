@@ -19,7 +19,11 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ## Artifacts
 
 ### Fandom Mobile (`artifacts/mobile`)
-An Expo React Native mobile app for fandom communities. Frontend-only, uses AsyncStorage for persistence.
+A **hybrid** Expo app — runs as a web app in browsers AND as a native mobile app via Expo Go simultaneously. Frontend-only, uses AsyncStorage for persistence.
+
+**Hybrid layout:**
+- **Web (browser)**: Left sidebar navigation (220px), `tabBarPosition: 'left'`, web-optimized top/bottom padding
+- **Mobile (iOS/Android)**: Bottom tab bar with blur effect, native SF Symbols on iOS, Feather icons elsewhere
 
 **Features:**
 - Home feed with featured fandoms carousel and posts feed (For You / Following / Trending filters)
@@ -27,16 +31,17 @@ An Expo React Native mobile app for fandom communities. Frontend-only, uses Asyn
 - Fandom detail page with stats, tags, follow/unfollow
 - Post detail with full content, like/save, and comments
 - Notifications screen with badge count
-- Profile screen with editable bio and saved posts/fandoms
+- Profile screen: XP card, fan tier badge (🌱캐주얼/⭐미들/👑로열), 촌수 network, 4-tab layout
+- CHON platform: XP earning (+5 like, +20 comment, +30 join), toast notifications
 
 **Stack:**
-- Expo Router (file-based routing)
+- Expo Router (file-based routing, `tabBarPosition` for platform routing)
 - React Context + AsyncStorage (local persistence)
 - `@expo/vector-icons` (Feather icons)
 - expo-haptics for touch feedback
 - `react-native-keyboard-controller` for keyboard handling
-- AI-generated images for fandoms (anime, fantasy categories)
 - Dark mode support via `constants/colors.ts` + `useColors()`
+- Korean/English i18n via `LanguageContext` + `constants/i18n.ts`
 
 ## Key Commands
 

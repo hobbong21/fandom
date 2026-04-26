@@ -79,7 +79,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: isWeb ? 67 : insets.top + 12 }]}>
+      <View style={[styles.header, { paddingTop: isWeb ? 20 : insets.top + 12 }]}>
         <Text style={styles.title}>{t.profileTitle}</Text>
         <View style={styles.headerActions}>
           <Pressable style={styles.langToggle} onPress={toggleLanguage}>
@@ -96,7 +96,7 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scroll,
-          { paddingBottom: isWeb ? 34 : insets.bottom + 100 },
+          { paddingBottom: isWeb ? 24 : insets.bottom + 100 },
         ]}
       >
         <View style={styles.avatarSection}>
