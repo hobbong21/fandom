@@ -4,6 +4,7 @@ import {
   FlatList,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -13,6 +14,8 @@ import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 import type { Notification } from "@/constants/data";
+
+const WEB_MAX_WIDTH = 680;
 
 const NOTIF_ICONS: Record<Notification["type"], string> = {
   like: "heart",
@@ -38,13 +41,65 @@ export default function NotificationsScreen() {
   const isWeb = Platform.OS === "web";
   const styles = makeStyles(colors);
 
+  const renderItem = (item: Notification) => (
+    <Pressable
+      key={item.id}
+      style={[styles.item, !item.isRead && styles.itemUnread]}
+      onPress={() => markRead(item.id)}
+    >
+      <View style={[styles.iconWrap, { backgroundColor: NOTIF_COLORS[item.type] + "22" }]}>
+        <Feather name={NOTIF_ICONS[item.type] as any} size={18} color={NOTIF_COLORS[item.type]} />
+      </View>
+      <View style={styles.itemContent}>
+        <Text style={[styles.itemTitle, { color: colors.foreground }]}>{item.title}</Text>
+        {item.body.length > 0 && (
+          <Text style={[styles.itemBody, { color: colors.mutedForeground }]} numberOfLines={2}>
+            {item.body}
+          </Text>
+        )}
+        <Text style={[styles.timeAgo, { color: colors.mutedForeground }]}>{item.timeAgo}</Text>
+      </View>
+      {!item.isRead && <View style={[styles.dot, { backgroundColor: colors.primary }]} />}
+    </Pressable>
+  );
+
+  if (isWeb) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.webScroll}>
+          <View style={styles.webInner}>
+            <View style={[styles.header, { paddingTop: 28 }]}>
+              <Text style={[styles.title, { color: colors.foreground }]}>{t.notificationsTitle}</Text>
+              {unreadCount > 0 && (
+                <Pressable style={[styles.markAllBtn, { backgroundColor: colors.muted }]} onPress={markAllRead}>
+                  <Text style={[styles.markAllText, { color: colors.primary }]}>{t.markAllRead}</Text>
+                </Pressable>
+              )}
+            </View>
+
+            {notifications.length === 0 ? (
+              <View style={styles.empty}>
+                <Feather name="bell" size={40} color={colors.mutedForeground} />
+                <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t.allCaughtUp}</Text>
+                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t.noNewNotifs}</Text>
+              </View>
+            ) : (
+              notifications.map(renderItem)
+            )}
+            <View style={{ height: 40 }} />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: isWeb ? 20 : insets.top + 12 }]}>
-        <Text style={styles.title}>{t.notificationsTitle}</Text>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <Text style={[styles.title, { color: colors.foreground }]}>{t.notificationsTitle}</Text>
         {unreadCount > 0 && (
-          <Pressable style={styles.markAllBtn} onPress={markAllRead}>
-            <Text style={styles.markAllText}>{t.markAllRead}</Text>
+          <Pressable style={[styles.markAllBtn, { backgroundColor: colors.muted }]} onPress={markAllRead}>
+            <Text style={[styles.markAllText, { color: colors.primary }]}>{t.markAllRead}</Text>
           </Pressable>
         )}
       </View>
@@ -53,33 +108,13 @@ export default function NotificationsScreen() {
         data={notifications}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.list,
-          { paddingBottom: isWeb ? 24 : insets.bottom + 100 },
-        ]}
-        renderItem={({ item }) => (
-          <Pressable
-            style={[styles.item, !item.isRead && styles.itemUnread]}
-            onPress={() => markRead(item.id)}
-          >
-            <View style={[styles.iconWrap, { backgroundColor: NOTIF_COLORS[item.type] + "22" }]}>
-              <Feather name={NOTIF_ICONS[item.type] as any} size={18} color={NOTIF_COLORS[item.type]} />
-            </View>
-            <View style={styles.itemContent}>
-              <Text style={styles.itemTitle}>{item.title}</Text>
-              {item.body.length > 0 && (
-                <Text style={styles.itemBody} numberOfLines={2}>{item.body}</Text>
-              )}
-              <Text style={styles.timeAgo}>{item.timeAgo}</Text>
-            </View>
-            {!item.isRead && <View style={styles.dot} />}
-          </Pressable>
-        )}
+        contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 100 }]}
+        renderItem={({ item }) => renderItem(item)}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Feather name="bell" size={40} color={colors.mutedForeground} />
-            <Text style={styles.emptyTitle}>{t.allCaughtUp}</Text>
-            <Text style={styles.emptyText}>{t.noNewNotifs}</Text>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t.allCaughtUp}</Text>
+            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t.noNewNotifs}</Text>
           </View>
         }
       />
@@ -90,17 +125,26 @@ export default function NotificationsScreen() {
 const makeStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
     container: { flex: 1 },
+    webScroll: {
+      flex: 1,
+      overflowY: "auto" as any,
+    },
+    webInner: {
+      maxWidth: WEB_MAX_WIDTH,
+      width: "100%",
+      alignSelf: "center",
+      paddingHorizontal: 20,
+    },
     header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingHorizontal: 20,
       paddingBottom: 14,
       backgroundColor: colors.background,
     },
-    title: { fontSize: 28, fontWeight: "800" as const, color: colors.foreground, letterSpacing: -0.5 },
-    markAllBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: colors.muted },
-    markAllText: { fontSize: 13, fontWeight: "500" as const, color: colors.primary },
+    title: { fontSize: 28, fontWeight: "800" as const, letterSpacing: -0.5 },
+    markAllBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
+    markAllText: { fontSize: 13, fontWeight: "500" as const },
     list: { paddingHorizontal: 16, paddingTop: 8 },
     item: {
       flexDirection: "row",
@@ -118,11 +162,11 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
     },
     iconWrap: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
     itemContent: { flex: 1, gap: 3 },
-    itemTitle: { fontSize: 14, fontWeight: "600" as const, color: colors.foreground, lineHeight: 19 },
-    itemBody: { fontSize: 13, color: colors.mutedForeground, lineHeight: 18 },
-    timeAgo: { fontSize: 12, color: colors.mutedForeground, marginTop: 2 },
-    dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary, marginTop: 6 },
+    itemTitle: { fontSize: 14, fontWeight: "600" as const, lineHeight: 19 },
+    itemBody: { fontSize: 13, lineHeight: 18 },
+    timeAgo: { fontSize: 12, marginTop: 2 },
+    dot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
     empty: { alignItems: "center", paddingVertical: 80, gap: 10 },
-    emptyTitle: { fontSize: 18, fontWeight: "700" as const, color: colors.foreground },
-    emptyText: { fontSize: 14, color: colors.mutedForeground },
+    emptyTitle: { fontSize: 18, fontWeight: "700" as const },
+    emptyText: { fontSize: 14 },
   });

@@ -17,6 +17,8 @@ import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 
+const WEB_MAX_WIDTH = 680;
+
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -37,25 +39,16 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View
-        style={[styles.header, { paddingTop: isWeb ? 20 : insets.top + 12 }]}
-      >
-        <Text style={styles.logo}>{t.appName}</Text>
-        <Pressable style={styles.searchBtn} onPress={() => router.push("/explore")}>
-          <Feather name="search" size={20} color={colors.foreground} />
-        </Pressable>
-      </View>
+      {isWeb ? (
+        <View style={styles.webScroll}>
+          <View style={styles.webInner}>
+            <View style={[styles.header, { paddingTop: 28 }]}>
+              <Text style={styles.logo}>{t.appName}</Text>
+              <Pressable style={styles.searchBtn} onPress={() => router.push("/explore")}>
+                <Feather name="search" size={20} color={colors.foreground} />
+              </Pressable>
+            </View>
 
-      <FlatList
-        data={filteredPosts}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.list,
-          { paddingBottom: isWeb ? 24 : insets.bottom + 100 },
-        ]}
-        ListHeaderComponent={
-          <>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -80,20 +73,78 @@ export default function HomeScreen() {
                 </Pressable>
               ))}
             </View>
-          </>
-        }
-        renderItem={({ item }) => <PostCard post={item} />}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Feather name="rss" size={40} color={colors.mutedForeground} />
-            <Text style={styles.emptyTitle}>{t.noPostsTitle}</Text>
-            <Text style={styles.emptyText}>{t.noPostsText}</Text>
-            <Pressable style={styles.exploreBtn} onPress={() => router.push("/explore")}>
-              <Text style={styles.exploreBtnText}>{t.exploreFandoms}</Text>
+
+            {filteredPosts.length === 0 ? (
+              <View style={styles.empty}>
+                <Feather name="rss" size={40} color={colors.mutedForeground} />
+                <Text style={styles.emptyTitle}>{t.noPostsTitle}</Text>
+                <Text style={styles.emptyText}>{t.noPostsText}</Text>
+                <Pressable style={styles.exploreBtn} onPress={() => router.push("/explore")}>
+                  <Text style={styles.exploreBtnText}>{t.exploreFandoms}</Text>
+                </Pressable>
+              </View>
+            ) : (
+              filteredPosts.map((item) => <PostCard key={item.id} post={item} />)
+            )}
+            <View style={{ height: 40 }} />
+          </View>
+        </View>
+      ) : (
+        <>
+          <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+            <Text style={styles.logo}>{t.appName}</Text>
+            <Pressable style={styles.searchBtn} onPress={() => router.push("/explore")}>
+              <Feather name="search" size={20} color={colors.foreground} />
             </Pressable>
           </View>
-        }
-      />
+
+          <FlatList
+            data={filteredPosts}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 100 }]}
+            ListHeaderComponent={
+              <>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.featured}
+                  contentContainerStyle={styles.featuredContent}
+                >
+                  {featuredFandoms.map((f) => (
+                    <FandomCard key={f.id} fandom={f} variant="featured" />
+                  ))}
+                </ScrollView>
+
+                <View style={styles.filterRow}>
+                  {feedFilters.map((filter, i) => (
+                    <Pressable
+                      key={filter}
+                      style={[styles.filterBtn, activeFilter === i && styles.filterBtnActive]}
+                      onPress={() => setActiveFilter(i)}
+                    >
+                      <Text style={[styles.filterText, activeFilter === i && styles.filterTextActive]}>
+                        {filter}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            }
+            renderItem={({ item }) => <PostCard post={item} />}
+            ListEmptyComponent={
+              <View style={styles.empty}>
+                <Feather name="rss" size={40} color={colors.mutedForeground} />
+                <Text style={styles.emptyTitle}>{t.noPostsTitle}</Text>
+                <Text style={styles.emptyText}>{t.noPostsText}</Text>
+                <Pressable style={styles.exploreBtn} onPress={() => router.push("/explore")}>
+                  <Text style={styles.exploreBtnText}>{t.exploreFandoms}</Text>
+                </Pressable>
+              </View>
+            }
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -101,12 +152,21 @@ export default function HomeScreen() {
 const makeStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
     container: { flex: 1 },
+    webScroll: {
+      flex: 1,
+      overflowY: "auto" as any,
+    },
+    webInner: {
+      maxWidth: WEB_MAX_WIDTH,
+      width: "100%",
+      alignSelf: "center",
+      paddingHorizontal: 20,
+    },
     header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingHorizontal: 20,
-      paddingBottom: 12,
+      paddingBottom: 16,
       backgroundColor: colors.background,
     },
     logo: {
@@ -124,7 +184,7 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       justifyContent: "center",
     },
     featured: { marginBottom: 16 },
-    featuredContent: { paddingHorizontal: 16 },
+    featuredContent: { gap: 10 },
     filterRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
     filterBtn: {
       paddingHorizontal: 16,

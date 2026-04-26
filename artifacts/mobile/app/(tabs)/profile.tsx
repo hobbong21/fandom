@@ -26,6 +26,8 @@ import { useColors } from "@/hooks/useColors";
 
 type Tab = "posts" | "saved" | "fandoms" | "network";
 
+const WEB_MAX_WIDTH = 680;
+
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -77,9 +79,9 @@ export default function ProfileScreen() {
     .slice(0, 2)
     .toUpperCase();
 
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: isWeb ? 20 : insets.top + 12 }]}>
+  const content = (
+    <>
+      <View style={[styles.header, { paddingTop: isWeb ? 28 : insets.top + 12 }]}>
         <Text style={styles.title}>{t.profileTitle}</Text>
         <View style={styles.headerActions}>
           <Pressable style={styles.langToggle} onPress={toggleLanguage}>
@@ -92,145 +94,160 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scroll,
-          { paddingBottom: isWeb ? 24 : insets.bottom + 100 },
-        ]}
-      >
-        <View style={styles.avatarSection}>
-          <View style={[styles.avatarWrapper, { borderColor: tierInfo.color }]}>
-            <View style={[styles.avatar, { backgroundColor: tierInfo.color }]}>
-              <Text style={styles.avatarText}>{initials}</Text>
-            </View>
-            <View style={styles.tierBadgeFloating}>
-              <FanTierBadge tier={tierInfo.tier} size="sm" showLabel={false} />
-            </View>
+      <View style={styles.avatarSection}>
+        <View style={[styles.avatarWrapper, { borderColor: tierInfo.color }]}>
+          <View style={[styles.avatar, { backgroundColor: tierInfo.color }]}>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
-
-          {editing ? (
-            <View style={styles.editForm}>
-              <TextInput
-                style={[styles.editInput, { color: colors.foreground }]}
-                value={nickname}
-                onChangeText={setNickname}
-                placeholder={t.nicknamePlaceholder}
-                placeholderTextColor={colors.mutedForeground}
-              />
-              <TextInput
-                style={[styles.editInput, styles.editTextarea, { color: colors.foreground }]}
-                value={bio}
-                onChangeText={setBio}
-                placeholder={t.bioPlaceholder}
-                placeholderTextColor={colors.mutedForeground}
-                multiline
-                numberOfLines={3}
-              />
-              <Pressable style={styles.saveBtn} onPress={() => setEditing(false)}>
-                <Text style={styles.saveBtnText}>{t.saveProfile}</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <View style={styles.userInfo}>
-              <View style={styles.nameRow}>
-                <Text style={styles.displayName}>{nickname || user?.name}</Text>
-                <FanTierBadge tier={tierInfo.tier} size="sm" />
-              </View>
-              {bio.length > 0 && (
-                <Text style={styles.userBio}>{bio}</Text>
-              )}
-              <Text style={styles.userEmail}>{user?.email}</Text>
-              <Pressable style={styles.editBtn} onPress={() => setEditing(true)}>
-                <Feather name="edit-2" size={14} color={colors.primary} />
-                <Text style={styles.editBtnText}>
-                  {language === "ko" ? "프로필 편집" : "Edit Profile"}
-                </Text>
-              </Pressable>
-            </View>
-          )}
-
-          <View style={[styles.xpCard, { backgroundColor: colors.card, borderColor: tierInfo.color + "40" }]}>
-            <Text style={[styles.xpCardTitle, { color: colors.foreground }]}>
-              {language === "ko" ? "🎮 내 팬 등급" : "🎮 My Fan Tier"}
-            </Text>
-            <XPProgressBar xp={totalXP} />
-            <View style={styles.xpHints}>
-              {[
-                { icon: "✏️", text: t.xpForPost },
-                { icon: "💬", text: t.xpForComment },
-                { icon: "❤️", text: t.xpForLike },
-                { icon: "🏠", text: t.xpForJoin },
-              ].map((hint) => (
-                <View key={hint.text} style={styles.xpHintRow}>
-                  <Text style={styles.xpHintIcon}>{hint.icon}</Text>
-                  <Text style={[styles.xpHintText, { color: colors.mutedForeground }]}>{hint.text}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.statsRow}>
-            <View style={styles.stat}>
-              <Text style={styles.statNum}>{myPosts.length}</Text>
-              <Text style={styles.statLabel}>{t.posts}</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={styles.statNum}>{followedFandoms.length}</Text>
-              <Text style={styles.statLabel}>{t.fandoms}</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={styles.statNum}>{chonConnections.filter((c) => c.degree === 1).length}</Text>
-              <Text style={styles.statLabel}>{language === "ko" ? "1촌" : "1st"}</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={[styles.statNum, { color: tierInfo.color }]}>{totalXP.toLocaleString()}</Text>
-              <Text style={styles.statLabel}>XP</Text>
-            </View>
+          <View style={styles.tierBadgeFloating}>
+            <FanTierBadge tier={tierInfo.tier} size="sm" showLabel={false} />
           </View>
         </View>
 
-        <View style={styles.tabRow}>
-          {profileTabs.map((tab) => (
-            <Pressable
-              key={tab.key}
-              style={[styles.tabBtn, activeTab === tab.key && styles.tabBtnActive]}
-              onPress={() => setActiveTab(tab.key)}
-            >
-              <Feather
-                name={tab.icon as any}
-                size={14}
-                color={activeTab === tab.key ? colors.foreground : colors.mutedForeground}
-              />
-              <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
-                {tab.label}
+        {editing ? (
+          <View style={styles.editForm}>
+            <TextInput
+              style={[styles.editInput, { color: colors.foreground }]}
+              value={nickname}
+              onChangeText={setNickname}
+              placeholder={t.nicknamePlaceholder}
+              placeholderTextColor={colors.mutedForeground}
+            />
+            <TextInput
+              style={[styles.editInput, styles.editTextarea, { color: colors.foreground }]}
+              value={bio}
+              onChangeText={setBio}
+              placeholder={t.bioPlaceholder}
+              placeholderTextColor={colors.mutedForeground}
+              multiline
+              numberOfLines={3}
+            />
+            <Pressable style={styles.saveBtn} onPress={() => setEditing(false)}>
+              <Text style={styles.saveBtnText}>{t.saveProfile}</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.userInfo}>
+            <View style={styles.nameRow}>
+              <Text style={styles.displayName}>{nickname || user?.name}</Text>
+              <FanTierBadge tier={tierInfo.tier} size="sm" />
+            </View>
+            {bio.length > 0 && (
+              <Text style={styles.userBio}>{bio}</Text>
+            )}
+            <Text style={styles.userEmail}>{user?.email}</Text>
+            <Pressable style={styles.editBtn} onPress={() => setEditing(true)}>
+              <Feather name="edit-2" size={14} color={colors.primary} />
+              <Text style={styles.editBtnText}>
+                {language === "ko" ? "프로필 편집" : "Edit Profile"}
               </Text>
             </Pressable>
-          ))}
+          </View>
+        )}
+
+        <View style={[styles.xpCard, { backgroundColor: colors.card, borderColor: tierInfo.color + "40" }]}>
+          <Text style={[styles.xpCardTitle, { color: colors.foreground }]}>
+            {language === "ko" ? "🎮 내 팬 등급" : "🎮 My Fan Tier"}
+          </Text>
+          <XPProgressBar xp={totalXP} />
+          <View style={styles.xpHints}>
+            {[
+              { icon: "✏️", text: t.xpForPost },
+              { icon: "💬", text: t.xpForComment },
+              { icon: "❤️", text: t.xpForLike },
+              { icon: "🏠", text: t.xpForJoin },
+            ].map((hint) => (
+              <View key={hint.text} style={styles.xpHintRow}>
+                <Text style={styles.xpHintIcon}>{hint.icon}</Text>
+                <Text style={[styles.xpHintText, { color: colors.mutedForeground }]}>{hint.text}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
-        {activeTab === "posts" && (
-          myPosts.length > 0
-            ? myPosts.map((p) => <PostCard key={p.id} post={p} />)
-            : <EmptyState icon="file-text" text={t.noPostsYet} colors={colors} />
-        )}
-        {activeTab === "saved" && (
-          savedPostItems.length > 0
-            ? savedPostItems.map((p) => <PostCard key={p.id} post={p} />)
-            : <EmptyState icon="bookmark" text={t.noSavedPosts} colors={colors} />
-        )}
-        {activeTab === "fandoms" && (
-          followedFandoms.length > 0
-            ? followedFandoms.map((f) => <FandomCard key={f.id} fandom={f} />)
-            : <EmptyState icon="users" text={t.noFandomsYet} colors={colors} />
-        )}
-        {activeTab === "network" && (
-          <ChonNetworkCard connections={chonConnections} />
-        )}
-      </ScrollView>
+        <View style={styles.statsRow}>
+          <View style={styles.stat}>
+            <Text style={styles.statNum}>{myPosts.length}</Text>
+            <Text style={styles.statLabel}>{t.posts}</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.stat}>
+            <Text style={styles.statNum}>{followedFandoms.length}</Text>
+            <Text style={styles.statLabel}>{t.fandoms}</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.stat}>
+            <Text style={styles.statNum}>{chonConnections.filter((c) => c.degree === 1).length}</Text>
+            <Text style={styles.statLabel}>{language === "ko" ? "1촌" : "1st"}</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.stat}>
+            <Text style={[styles.statNum, { color: tierInfo.color }]}>{totalXP.toLocaleString()}</Text>
+            <Text style={styles.statLabel}>XP</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.tabRow}>
+        {profileTabs.map((tab) => (
+          <Pressable
+            key={tab.key}
+            style={[styles.tabBtn, activeTab === tab.key && styles.tabBtnActive]}
+            onPress={() => setActiveTab(tab.key)}
+          >
+            <Feather
+              name={tab.icon as any}
+              size={14}
+              color={activeTab === tab.key ? colors.foreground : colors.mutedForeground}
+            />
+            <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
+              {tab.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {activeTab === "posts" && (
+        myPosts.length > 0
+          ? myPosts.map((p) => <PostCard key={p.id} post={p} />)
+          : <EmptyState icon="file-text" text={t.noPostsYet} colors={colors} />
+      )}
+      {activeTab === "saved" && (
+        savedPostItems.length > 0
+          ? savedPostItems.map((p) => <PostCard key={p.id} post={p} />)
+          : <EmptyState icon="bookmark" text={t.noSavedPosts} colors={colors} />
+      )}
+      {activeTab === "fandoms" && (
+        followedFandoms.length > 0
+          ? followedFandoms.map((f) => <FandomCard key={f.id} fandom={f} />)
+          : <EmptyState icon="users" text={t.noFandomsYet} colors={colors} />
+      )}
+      {activeTab === "network" && (
+        <ChonNetworkCard connections={chonConnections} />
+      )}
+      <View style={{ height: 40 }} />
+    </>
+  );
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {isWeb ? (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.webScrollOuter}
+        >
+          <View style={styles.webInner}>
+            {content}
+          </View>
+        </ScrollView>
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]}
+        >
+          {content}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -247,11 +264,21 @@ function EmptyState({ icon, text, colors }: { icon: any; text: string; colors: a
 const makeStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
     container: { flex: 1 },
+    webScrollOuter: {
+      flexGrow: 1,
+    },
+    webInner: {
+      maxWidth: WEB_MAX_WIDTH,
+      width: "100%",
+      alignSelf: "center",
+      paddingHorizontal: 20,
+      paddingBottom: 40,
+    },
+    scroll: { paddingHorizontal: 16 },
     header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingHorizontal: 20,
       paddingBottom: 12,
       backgroundColor: colors.background,
     },
@@ -280,7 +307,6 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    scroll: { paddingHorizontal: 16 },
     avatarSection: { alignItems: "center", paddingVertical: 20, gap: 12 },
     avatarWrapper: {
       position: "relative",
