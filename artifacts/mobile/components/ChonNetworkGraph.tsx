@@ -12,6 +12,7 @@ import {
 import Svg, {
   Circle,
   Defs,
+  Ellipse,
   G,
   Line,
   RadialGradient,
@@ -52,6 +53,10 @@ const TIER_EMOJI: Record<string, string> = {
   middle: "⭐",
   royal: "👑",
 };
+
+function tierGradId(tier: string) {
+  return `sphere_${tier}`;
+}
 
 export function ChonNetworkGraph({ visible, onClose, connections, userName, userInitials, totalXP }: Props) {
   const colors = useColors();
@@ -151,7 +156,9 @@ export function ChonNetworkGraph({ visible, onClose, connections, userName, user
             ))}
             <View style={{ marginLeft: "auto", flexDirection: "row", gap: 10 }}>
               {Object.entries(TIER_EMOJI).map(([tier, emoji]) => (
-                <Text key={tier} style={{ fontSize: 11, color: colors.mutedForeground }}>{emoji} {tier === "casual" ? "캐주얼" : tier === "middle" ? "미들" : "로열"}</Text>
+                <Text key={tier} style={{ fontSize: 11, color: colors.mutedForeground }}>
+                  {emoji} {tier === "casual" ? "캐주얼" : tier === "middle" ? "미들" : "로열"}
+                </Text>
               ))}
             </View>
           </View>
@@ -160,9 +167,37 @@ export function ChonNetworkGraph({ visible, onClose, connections, userName, user
           <Animated.View style={{ alignItems: "center", paddingTop: 8, opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}>
             <Svg width={canvasW} height={canvasH}>
               <Defs>
-                <RadialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
-                  <Stop offset="0%" stopColor="#a78bfa" stopOpacity="1" />
-                  <Stop offset="100%" stopColor="#7c3aed" stopOpacity="1" />
+                {/* ── 3D sphere gradients ── each simulates a light from upper-left */}
+                {/* Center / 나 — purple */}
+                <RadialGradient id="sphere_center" cx="36%" cy="28%" r="68%">
+                  <Stop offset="0%"   stopColor="#ede9fe" stopOpacity="1" />
+                  <Stop offset="38%"  stopColor="#a78bfa" stopOpacity="1" />
+                  <Stop offset="70%"  stopColor="#7c3aed" stopOpacity="1" />
+                  <Stop offset="100%" stopColor="#3b0764" stopOpacity="1" />
+                </RadialGradient>
+
+                {/* casual — gray */}
+                <RadialGradient id="sphere_casual" cx="36%" cy="28%" r="68%">
+                  <Stop offset="0%"   stopColor="#f3f4f6" stopOpacity="1" />
+                  <Stop offset="38%"  stopColor="#9ca3af" stopOpacity="1" />
+                  <Stop offset="70%"  stopColor="#6b7280" stopOpacity="1" />
+                  <Stop offset="100%" stopColor="#111827" stopOpacity="1" />
+                </RadialGradient>
+
+                {/* middle — blue */}
+                <RadialGradient id="sphere_middle" cx="36%" cy="28%" r="68%">
+                  <Stop offset="0%"   stopColor="#dbeafe" stopOpacity="1" />
+                  <Stop offset="38%"  stopColor="#93c5fd" stopOpacity="1" />
+                  <Stop offset="70%"  stopColor="#3b82f6" stopOpacity="1" />
+                  <Stop offset="100%" stopColor="#1e3a8a" stopOpacity="1" />
+                </RadialGradient>
+
+                {/* royal — gold */}
+                <RadialGradient id="sphere_royal" cx="36%" cy="28%" r="68%">
+                  <Stop offset="0%"   stopColor="#fffde7" stopOpacity="1" />
+                  <Stop offset="38%"  stopColor="#fcd34d" stopOpacity="1" />
+                  <Stop offset="70%"  stopColor="#f59e0b" stopOpacity="1" />
+                  <Stop offset="100%" stopColor="#78350f" stopOpacity="1" />
                 </RadialGradient>
               </Defs>
 
@@ -186,60 +221,122 @@ export function ChonNetworkGraph({ visible, onClose, connections, userName, user
                 );
               })}
 
-              {/* 2촌 nodes */}
+              {/* ── 2촌 nodes (3D spheres) ── */}
               {nodes2.map((n) => {
-                const tier = TIER_COLOR[n.tier] ?? "#6b7280";
+                const r = NODE_R2;
                 const isSelected = selected?.id === n.id;
+                const ringStroke = "#10b981";
+                const gradId = `url(#${tierGradId(n.tier ?? "casual")})`;
                 return (
                   <G key={n.id} onPress={() => setSelected(isSelected ? null : n)}>
-                    <Circle cx={n.x} cy={n.y} r={NODE_R2 + 7} fill="#10b981" opacity={isSelected ? 0.22 : 0.1} />
-                    <Circle cx={n.x} cy={n.y} r={NODE_R2} fill={tier} stroke="#10b981" strokeWidth={isSelected ? 3 : 2} />
+                    {/* soft ground shadow */}
+                    <Ellipse cx={n.x} cy={n.y + r + 3} rx={r * 0.72} ry={r * 0.22}
+                      fill="#000" opacity={isDark ? 0.45 : 0.18} />
+                    {/* selection glow */}
+                    {isSelected && (
+                      <Circle cx={n.x} cy={n.y} r={r + 9} fill="#10b981" opacity={0.22} />
+                    )}
+                    {/* outer ambient glow */}
+                    <Circle cx={n.x} cy={n.y} r={r + 5} fill="#10b981" opacity={0.1} />
+                    {/* 3D sphere body */}
+                    <Circle cx={n.x} cy={n.y} r={r} fill={gradId} />
+                    {/* ring stroke */}
+                    <Circle cx={n.x} cy={n.y} r={r} fill="none"
+                      stroke={ringStroke} strokeWidth={isSelected ? 2.5 : 1.8} opacity={0.85} />
+                    {/* specular highlight */}
+                    <Circle cx={n.x - r * 0.27} cy={n.y - r * 0.3}
+                      r={r * 0.2} fill="#fff" opacity={0.45} />
+                    {/* micro glint */}
+                    <Circle cx={n.x - r * 0.44} cy={n.y - r * 0.44}
+                      r={r * 0.07} fill="#fff" opacity={0.6} />
+                    {/* label */}
                     <SvgText x={n.x} y={n.y + 5} textAnchor="middle" fill="#fff" fontSize={11} fontWeight="700">
                       {n.avatar.charAt(0)}
                     </SvgText>
-                    <SvgText x={n.x} y={n.y + NODE_R2 + 13} textAnchor="middle" fill={colors.mutedForeground} fontSize={9}>
+                    <SvgText x={n.x} y={n.y + r + 14} textAnchor="middle" fill={colors.mutedForeground} fontSize={9}>
                       {n.name}
                     </SvgText>
-                    <SvgText x={n.x} y={n.y + NODE_R2 + 22} textAnchor="middle" fill="#10b981" fontSize={8} opacity={0.8}>
+                    <SvgText x={n.x} y={n.y + r + 23} textAnchor="middle" fill="#10b981" fontSize={8} opacity={0.85}>
                       2촌
                     </SvgText>
                   </G>
                 );
               })}
 
-              {/* 1촌 nodes */}
+              {/* ── 1촌 nodes (3D spheres, larger) ── */}
               {nodes1.map((n) => {
-                const tier = TIER_COLOR[n.tier] ?? "#6b7280";
+                const r = NODE_R1;
                 const isSelected = selected?.id === n.id;
+                const ringStroke = "#ec4899";
+                const gradId = `url(#${tierGradId(n.tier ?? "casual")})`;
                 return (
                   <G key={n.id} onPress={() => setSelected(isSelected ? null : n)}>
-                    <Circle cx={n.x} cy={n.y} r={NODE_R1 + 8} fill="#ec4899" opacity={isSelected ? 0.2 : 0.09} />
-                    <Circle cx={n.x} cy={n.y} r={NODE_R1} fill={tier} stroke="#ec4899" strokeWidth={isSelected ? 3.5 : 2.5} />
+                    {/* ground shadow */}
+                    <Ellipse cx={n.x} cy={n.y + r + 4} rx={r * 0.68} ry={r * 0.22}
+                      fill="#000" opacity={isDark ? 0.5 : 0.18} />
+                    {/* selection glow */}
+                    {isSelected && (
+                      <Circle cx={n.x} cy={n.y} r={r + 12} fill="#ec4899" opacity={0.22} />
+                    )}
+                    {/* outer ambient glow */}
+                    <Circle cx={n.x} cy={n.y} r={r + 7} fill="#ec4899" opacity={0.09} />
+                    {/* 3D sphere body */}
+                    <Circle cx={n.x} cy={n.y} r={r} fill={gradId} />
+                    {/* ring stroke */}
+                    <Circle cx={n.x} cy={n.y} r={r} fill="none"
+                      stroke={ringStroke} strokeWidth={isSelected ? 3 : 2.2} opacity={0.9} />
+                    {/* specular highlight */}
+                    <Circle cx={n.x - r * 0.27} cy={n.y - r * 0.3}
+                      r={r * 0.21} fill="#fff" opacity={0.5} />
+                    {/* micro glint */}
+                    <Circle cx={n.x - r * 0.44} cy={n.y - r * 0.44}
+                      r={r * 0.08} fill="#fff" opacity={0.65} />
+                    {/* label */}
                     <SvgText x={n.x} y={n.y + 5} textAnchor="middle" fill="#fff" fontSize={13} fontWeight="700">
                       {n.avatar.charAt(0)}
                     </SvgText>
-                    <SvgText x={n.x} y={n.y + NODE_R1 + 13} textAnchor="middle" fill={colors.foreground} fontSize={10} fontWeight="600">
+                    <SvgText x={n.x} y={n.y + r + 14} textAnchor="middle" fill={colors.foreground} fontSize={10} fontWeight="600">
                       {n.name}
                     </SvgText>
-                    <SvgText x={n.x} y={n.y + NODE_R1 + 23} textAnchor="middle" fill="#ec4899" fontSize={8} opacity={0.9}>
+                    <SvgText x={n.x} y={n.y + r + 24} textAnchor="middle" fill="#ec4899" fontSize={8} opacity={0.9}>
                       1촌
                     </SvgText>
                   </G>
                 );
               })}
 
-              {/* Center: 나 */}
-              <Circle cx={cx} cy={cy} r={CENTER_R + 10} fill="#7c3aed" opacity={0.13} />
-              <Circle cx={cx} cy={cy} r={CENTER_R} fill="url(#centerGrad)" stroke="#a78bfa" strokeWidth={3} />
-              <SvgText x={cx} y={cy - 4} textAnchor="middle" fill="#fff" fontSize={13} fontWeight="800">
-                {userInitials}
-              </SvgText>
-              <SvgText x={cx} y={cy + 10} textAnchor="middle" fill="#e9d5ff" fontSize={9}>
-                나
-              </SvgText>
-              <SvgText x={cx} y={cy + CENTER_R + 15} textAnchor="middle" fill={colors.foreground} fontSize={10} fontWeight="600">
-                {userName}
-              </SvgText>
+              {/* ── Center node: 나 (largest 3D sphere) ── */}
+              {(() => {
+                const r = CENTER_R;
+                return (
+                  <G>
+                    {/* ground shadow */}
+                    <Ellipse cx={cx} cy={cy + r + 6} rx={r * 0.65} ry={r * 0.2}
+                      fill="#000" opacity={isDark ? 0.55 : 0.2} />
+                    {/* outer glow ring */}
+                    <Circle cx={cx} cy={cy} r={r + 12} fill="#7c3aed" opacity={0.15} />
+                    <Circle cx={cx} cy={cy} r={r + 7}  fill="#7c3aed" opacity={0.12} />
+                    {/* 3D sphere body */}
+                    <Circle cx={cx} cy={cy} r={r} fill="url(#sphere_center)" />
+                    {/* glossy rim */}
+                    <Circle cx={cx} cy={cy} r={r} fill="none" stroke="#c4b5fd" strokeWidth={2.5} opacity={0.75} />
+                    {/* primary specular highlight — large soft blob */}
+                    <Circle cx={cx - r * 0.26} cy={cy - r * 0.29} r={r * 0.28} fill="#fff" opacity={0.42} />
+                    {/* secondary micro glint */}
+                    <Circle cx={cx - r * 0.46} cy={cy - r * 0.46} r={r * 0.1} fill="#fff" opacity={0.7} />
+                    {/* label */}
+                    <SvgText x={cx} y={cy - 4} textAnchor="middle" fill="#fff" fontSize={13} fontWeight="800">
+                      {userInitials}
+                    </SvgText>
+                    <SvgText x={cx} y={cy + 11} textAnchor="middle" fill="#ede9fe" fontSize={9}>
+                      나
+                    </SvgText>
+                    <SvgText x={cx} y={cy + r + 17} textAnchor="middle" fill={colors.foreground} fontSize={10} fontWeight="600">
+                      {userName}
+                    </SvgText>
+                  </G>
+                );
+              })()}
             </Svg>
           </Animated.View>
 
