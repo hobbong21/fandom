@@ -18,6 +18,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { FandomProvider } from "@/context/FandomContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { XPProvider } from "@/context/XPContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -89,7 +90,9 @@ export default function RootLayout() {
               <GestureHandlerRootView style={{ flex: 1 }}>
                 <KeyboardProvider>
                   <FandomProvider>
-                    <RootLayoutNav />
+                    <XPProvider>
+                      <RootLayoutNav />
+                    </XPProvider>
                   </FandomProvider>
                 </KeyboardProvider>
               </GestureHandlerRootView>

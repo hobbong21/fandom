@@ -98,6 +98,28 @@ const translations = {
     loginError: "이메일 또는 비밀번호가 올바르지 않습니다",
     passwordShort: "비밀번호는 6자 이상이어야 합니다",
 
+    // XP & Tier
+    xpSystem: "XP 시스템",
+    myXP: "내 경험치",
+    fanTier: "팬 등급",
+    tierCasual: "캐주얼",
+    tierMiddle: "미들",
+    tierRoyal: "로열",
+    xpToNextTier: "다음 등급까지",
+    maxTierReached: "최고 등급 달성! 🎉",
+    earnXPBy: "XP 획득 방법",
+    xpForPost: "게시글 작성 +50 XP",
+    xpForComment: "댓글 작성 +20 XP",
+    xpForLike: "좋아요 +5 XP",
+    xpForJoin: "팬덤 가입 +30 XP",
+
+    // Chon Network
+    chonNetwork: "촌수 네트워크",
+    firstDegree: "1촌",
+    secondDegree: "2촌",
+    chonConnected: "명의 팬과 연결됨",
+    royalFans: "로열 팬",
+
     // Announcement
     announcementTitle: "📢 공지사항",
     announcementContent:
@@ -192,6 +214,28 @@ const translations = {
     nameRequired: "Please enter your display name",
     loginError: "Invalid email or password",
     passwordShort: "Password must be at least 6 characters",
+
+    // XP & Tier
+    xpSystem: "XP System",
+    myXP: "My XP",
+    fanTier: "Fan Tier",
+    tierCasual: "Casual",
+    tierMiddle: "Middle",
+    tierRoyal: "Royal",
+    xpToNextTier: "XP to next tier",
+    maxTierReached: "Max tier reached! 🎉",
+    earnXPBy: "How to earn XP",
+    xpForPost: "Write a post +50 XP",
+    xpForComment: "Write a comment +20 XP",
+    xpForLike: "Like a post +5 XP",
+    xpForJoin: "Join a fandom +30 XP",
+
+    // Chon Network
+    chonNetwork: "Fan Network",
+    firstDegree: "1st",
+    secondDegree: "2nd",
+    chonConnected: "fans connected",
+    royalFans: "Royal fans",
 
     announcementTitle: "📢 Announcement",
     announcementContent:

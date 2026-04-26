@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { useFandom } from "@/context/FandomContext";
+import { useXP } from "@/context/XPContext";
 import { useColors } from "@/hooks/useColors";
 import type { Post } from "@/constants/data";
 
@@ -27,11 +28,13 @@ function formatCount(n: number): string {
 export function PostCard({ post, compact = false }: PostCardProps) {
   const colors = useColors();
   const { likedPosts, savedPosts, toggleLike, toggleSave } = useFandom();
+  const { earnXP } = useXP();
   const isLiked = likedPosts.includes(post.id);
   const isSaved = savedPosts.includes(post.id);
 
   const handleLike = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (!isLiked) earnXP("LIKE_POST");
     toggleLike(post.id);
   };
 

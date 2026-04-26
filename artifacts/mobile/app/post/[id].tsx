@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useXP } from "@/context/XPContext";
 import { useColors } from "@/hooks/useColors";
 import type { Comment } from "@/constants/data";
 
@@ -65,6 +66,7 @@ export default function PostDetailScreen() {
   const insets = useSafeAreaInsets();
   const { posts, likedPosts, savedPosts, toggleLike, toggleSave, getPostComments, addComment } = useFandom();
   const { t } = useLanguage();
+  const { earnXP } = useXP();
   const post = posts.find((p) => p.id === id);
   const comments = getPostComments(id ?? "");
   const isLiked = likedPosts.includes(id ?? "");
@@ -85,6 +87,7 @@ export default function PostDetailScreen() {
     const trimmed = commentText.trim();
     if (!trimmed) return;
     addComment(post.id, trimmed);
+    earnXP("WRITE_COMMENT");
     setCommentText("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };

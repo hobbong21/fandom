@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useXP } from "@/context/XPContext";
 import { useColors } from "@/hooks/useColors";
 import type { Fandom } from "@/constants/data";
 
@@ -29,11 +30,13 @@ export function FandomCard({ fandom, variant = "default" }: FandomCardProps) {
   const colors = useColors();
   const { followedFandomIds, toggleFollow } = useFandom();
   const { t } = useLanguage();
+  const { earnXP } = useXP();
   const isFollowing = followedFandomIds.includes(fandom.id);
   const styles = makeStyles(colors);
 
   const handleFollow = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (!isFollowing) earnXP("JOIN_FANDOM");
     toggleFollow(fandom.id);
   };
 

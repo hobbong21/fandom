@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PostCard } from "@/components/PostCard";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useXP } from "@/context/XPContext";
 import { useColors } from "@/hooks/useColors";
 
 function formatCount(n: number): string {
@@ -29,6 +30,7 @@ export default function FandomDetailScreen() {
   const insets = useSafeAreaInsets();
   const { fandoms, posts, followedFandomIds, toggleFollow } = useFandom();
   const { t } = useLanguage();
+  const { earnXP } = useXP();
   const fandom = fandoms.find((f) => f.id === id);
   const fandomPosts = posts.filter((p) => p.fandomId === id);
   const isFollowing = followedFandomIds.includes(id ?? "");
@@ -45,6 +47,7 @@ export default function FandomDetailScreen() {
 
   const handleFollow = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (!isFollowing) earnXP("JOIN_FANDOM");
     toggleFollow(fandom.id);
   };
 

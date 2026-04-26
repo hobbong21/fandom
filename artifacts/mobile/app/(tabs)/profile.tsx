@@ -12,14 +12,19 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ChonNetworkCard } from "@/components/ChonNetworkCard";
 import { FandomCard } from "@/components/FandomCard";
+import { FanTierBadge } from "@/components/FanTierBadge";
 import { PostCard } from "@/components/PostCard";
+import { XPProgressBar } from "@/components/XPProgressBar";
+import { getTierInfo } from "@/constants/fanTiers";
 import { useAuth } from "@/context/AuthContext";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useXP } from "@/context/XPContext";
 import { useColors } from "@/hooks/useColors";
 
-type Tab = "posts" | "saved" | "fandoms";
+type Tab = "posts" | "saved" | "fandoms" | "network";
 
 export default function ProfileScreen() {
   const colors = useColors();
@@ -27,13 +32,16 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const { posts, savedPosts, followedFandomIds, fandoms } = useFandom();
   const { t, language, toggleLanguage } = useLanguage();
+  const { totalXP, chonConnections } = useXP();
   const [activeTab, setActiveTab] = useState<Tab>("posts");
   const [editing, setEditing] = useState(false);
   const [nickname, setNickname] = useState(user?.name ?? "");
   const [bio, setBio] = useState("");
   const isWeb = Platform.OS === "web";
 
-  const myPosts = posts.filter((p) => p.author === (user?.name ?? ""));
+  const tierInfo = getTierInfo(totalXP);
+
+  const myPosts = posts.filter((p) => p.authorName === (user?.name ?? ""));
   const savedPostItems = posts.filter((p) => savedPosts.includes(p.id));
   const followedFandoms = fandoms.filter((f) => followedFandomIds.includes(f.id));
 
@@ -55,10 +63,11 @@ export default function ProfileScreen() {
   };
 
   const styles = makeStyles(colors);
-  const profileTabs: { key: Tab; label: string }[] = [
-    { key: "posts", label: t.posts },
-    { key: "saved", label: t.saved },
-    { key: "fandoms", label: t.fandoms },
+  const profileTabs: { key: Tab; label: string; icon: string }[] = [
+    { key: "posts", label: t.posts, icon: "file-text" },
+    { key: "saved", label: t.saved, icon: "bookmark" },
+    { key: "fandoms", label: t.fandoms, icon: "users" },
+    { key: "network", label: language === "ko" ? "촌수" : "Network", icon: "share-2" },
   ];
 
   const initials = (user?.name ?? "?")
@@ -91,8 +100,13 @@ export default function ProfileScreen() {
         ]}
       >
         <View style={styles.avatarSection}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials}</Text>
+          <View style={[styles.avatarWrapper, { borderColor: tierInfo.color }]}>
+            <View style={[styles.avatar, { backgroundColor: tierInfo.color }]}>
+              <Text style={styles.avatarText}>{initials}</Text>
+            </View>
+            <View style={styles.tierBadgeFloating}>
+              <FanTierBadge tier={tierInfo.tier} size="sm" showLabel={false} />
+            </View>
           </View>
 
           {editing ? (
@@ -119,7 +133,10 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <View style={styles.userInfo}>
-              <Text style={styles.displayName}>{nickname || user?.name}</Text>
+              <View style={styles.nameRow}>
+                <Text style={styles.displayName}>{nickname || user?.name}</Text>
+                <FanTierBadge tier={tierInfo.tier} size="sm" />
+              </View>
               {bio.length > 0 && (
                 <Text style={styles.userBio}>{bio}</Text>
               )}
@@ -133,6 +150,26 @@ export default function ProfileScreen() {
             </View>
           )}
 
+          <View style={[styles.xpCard, { backgroundColor: colors.card, borderColor: tierInfo.color + "40" }]}>
+            <Text style={[styles.xpCardTitle, { color: colors.foreground }]}>
+              {language === "ko" ? "🎮 내 팬 등급" : "🎮 My Fan Tier"}
+            </Text>
+            <XPProgressBar xp={totalXP} />
+            <View style={styles.xpHints}>
+              {[
+                { icon: "✏️", text: t.xpForPost },
+                { icon: "💬", text: t.xpForComment },
+                { icon: "❤️", text: t.xpForLike },
+                { icon: "🏠", text: t.xpForJoin },
+              ].map((hint) => (
+                <View key={hint.text} style={styles.xpHintRow}>
+                  <Text style={styles.xpHintIcon}>{hint.icon}</Text>
+                  <Text style={[styles.xpHintText, { color: colors.mutedForeground }]}>{hint.text}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
           <View style={styles.statsRow}>
             <View style={styles.stat}>
               <Text style={styles.statNum}>{myPosts.length}</Text>
@@ -145,8 +182,13 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <Text style={styles.statNum}>0</Text>
-              <Text style={styles.statLabel}>{t.following}</Text>
+              <Text style={styles.statNum}>{chonConnections.filter((c) => c.degree === 1).length}</Text>
+              <Text style={styles.statLabel}>{language === "ko" ? "1촌" : "1st"}</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.stat}>
+              <Text style={[styles.statNum, { color: tierInfo.color }]}>{totalXP.toLocaleString()}</Text>
+              <Text style={styles.statLabel}>XP</Text>
             </View>
           </View>
         </View>
@@ -158,6 +200,11 @@ export default function ProfileScreen() {
               style={[styles.tabBtn, activeTab === tab.key && styles.tabBtnActive]}
               onPress={() => setActiveTab(tab.key)}
             >
+              <Feather
+                name={tab.icon as any}
+                size={14}
+                color={activeTab === tab.key ? colors.foreground : colors.mutedForeground}
+              />
               <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
                 {tab.label}
               </Text>
@@ -179,6 +226,9 @@ export default function ProfileScreen() {
           followedFandoms.length > 0
             ? followedFandoms.map((f) => <FandomCard key={f.id} fandom={f} />)
             : <EmptyState icon="users" text={t.noFandomsYet} colors={colors} />
+        )}
+        {activeTab === "network" && (
+          <ChonNetworkCard connections={chonConnections} />
         )}
       </ScrollView>
     </View>
@@ -232,15 +282,29 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
     },
     scroll: { paddingHorizontal: 16 },
     avatarSection: { alignItems: "center", paddingVertical: 20, gap: 12 },
-    avatar: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: colors.primary,
+    avatarWrapper: {
+      position: "relative",
+      width: 84,
+      height: 84,
+      borderRadius: 42,
+      borderWidth: 3,
       alignItems: "center",
       justifyContent: "center",
     },
-    avatarText: { fontSize: 28, fontWeight: "700" as const, color: colors.primaryForeground },
+    avatar: {
+      width: 76,
+      height: 76,
+      borderRadius: 38,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    avatarText: { fontSize: 28, fontWeight: "700" as const, color: "#fff" },
+    tierBadgeFloating: {
+      position: "absolute",
+      bottom: -2,
+      right: -4,
+    },
+    nameRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "center" },
     userInfo: { alignItems: "center", gap: 4 },
     displayName: { fontSize: 20, fontWeight: "700" as const, color: colors.foreground },
     userBio: { fontSize: 14, color: colors.mutedForeground, textAlign: "center", maxWidth: 260 },
@@ -272,6 +336,18 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       alignItems: "center",
     },
     saveBtnText: { color: colors.primaryForeground, fontWeight: "700" as const, fontSize: 15 },
+    xpCard: {
+      width: "100%",
+      borderRadius: 16,
+      borderWidth: 1.5,
+      padding: 16,
+      gap: 10,
+    },
+    xpCardTitle: { fontSize: 15, fontWeight: "700" as const },
+    xpHints: { gap: 4, marginTop: 4 },
+    xpHintRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+    xpHintIcon: { fontSize: 13, width: 20 },
+    xpHintText: { fontSize: 12 },
     statsRow: {
       flexDirection: "row",
       alignItems: "center",
@@ -281,8 +357,8 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       width: "100%",
     },
     stat: { flex: 1, alignItems: "center", gap: 2 },
-    statNum: { fontSize: 20, fontWeight: "700" as const, color: colors.foreground },
-    statLabel: { fontSize: 12, color: colors.mutedForeground },
+    statNum: { fontSize: 18, fontWeight: "700" as const, color: colors.foreground },
+    statLabel: { fontSize: 11, color: colors.mutedForeground },
     statDivider: { width: 1, height: 30, backgroundColor: colors.border },
     tabRow: {
       flexDirection: "row",
@@ -291,7 +367,15 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       padding: 4,
       marginBottom: 16,
     },
-    tabBtn: { flex: 1, paddingVertical: 9, alignItems: "center", borderRadius: 10 },
+    tabBtn: {
+      flex: 1,
+      paddingVertical: 8,
+      alignItems: "center",
+      borderRadius: 10,
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 4,
+    },
     tabBtnActive: {
       backgroundColor: colors.background,
       shadowColor: "#000",
@@ -300,6 +384,6 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
       shadowRadius: 2,
       elevation: 1,
     },
-    tabText: { fontSize: 14, fontWeight: "500" as const, color: colors.mutedForeground },
+    tabText: { fontSize: 12, fontWeight: "500" as const, color: colors.mutedForeground },
     tabTextActive: { fontWeight: "700" as const, color: colors.foreground },
   });
