@@ -18,6 +18,32 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 ## Artifacts
 
+### AI Harness (`artifacts/harness`)
+A web app for testing AI capabilities of the Fandom platform. Built as a static React/Vite SPA served by the API server.
+
+**Features:**
+- Chat workspace with SSE streaming responses from OpenAI
+- Image Lab for AI image generation
+- Conversation history browser
+- Korean/English language toggle
+
+**Architecture:**
+- Frontend built with `BASE_PATH=/ai-harness/ pnpm --filter @workspace/harness run build`
+- Static files served from `artifacts/harness/dist/public/` by the API server's Express static middleware at `/ai-harness/`
+- The harness artifact has `localPort=8080` so the proxy routes `/ai-harness/` to the API server
+- After frontend changes, run: `BASE_PATH=/ai-harness/ pnpm --filter @workspace/harness run build` then restart the API server
+- OpenAI integration via Replit AI Integrations proxy (`AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`)
+
+**Backend API routes (in `artifacts/api-server/src/routes/openai/`):**
+- `GET /api/openai/conversations` — list conversations
+- `POST /api/openai/conversations` — create conversation
+- `GET /api/openai/conversations/:id` — get conversation + messages
+- `DELETE /api/openai/conversations/:id` — delete conversation
+- `POST /api/openai/conversations/:id/messages` — send message (SSE streaming)
+- `POST /api/openai/generate-image` — generate image (base64 response)
+
+**DB tables:** `conversations`, `messages` (in `lib/db/src/schema/`)
+
 ### Fandom Mobile (`artifacts/mobile`) — 스타링 (Starling)
 A **hybrid** Expo app — runs as a web app in browsers AND as a native mobile app via Expo Go simultaneously. Frontend-only, uses AsyncStorage for persistence. **Concept: Direct artist-fan communication platform** for Korean singers, indie bands, and trot artists.
 

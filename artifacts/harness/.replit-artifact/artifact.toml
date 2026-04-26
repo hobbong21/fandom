@@ -1,0 +1,29 @@
+kind = "web"
+previewPath = "/ai-harness/"
+title = "AI Harness"
+version = "1.0.0"
+id = "artifacts/harness"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/ai-harness/" ]
+localPort = 8080
+
+[services.development]
+run = "pnpm --filter @workspace/harness run build:watch"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/harness", "run", "build" ]
+publicDir = "artifacts/harness/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+BASE_PATH = "/ai-harness/"
