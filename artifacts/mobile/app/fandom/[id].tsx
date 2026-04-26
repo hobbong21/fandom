@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -19,6 +20,7 @@ import { PostCard } from "@/components/PostCard";
 import { useAuth } from "@/context/AuthContext";
 import { useChat, type ChatMessage } from "@/context/ChatContext";
 import { useStore } from "@/context/StoreContext";
+import productImages from "@/constants/productImages";
 import { useFandom } from "@/context/FandomContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useXP } from "@/context/XPContext";
@@ -267,12 +269,14 @@ function StoreTabContent({ fandomId, fandom }: { fandomId: string; fandom: Fando
             }}>
               {/* Product header */}
               <View style={{ flexDirection: "row", alignItems: "center", gap: 14, padding: 16 }}>
-                <View style={{
-                  width: 60, height: 60, borderRadius: 12,
-                  backgroundColor: fandom.color + "18",
-                  alignItems: "center", justifyContent: "center",
-                }}>
-                  <Text style={{ fontSize: 30 }}>{product.emoji}</Text>
+                <View style={{ width: 72, height: 72, borderRadius: 14, overflow: "hidden", backgroundColor: fandom.color + "18" }}>
+                  {productImages[product.id] ? (
+                    <Image source={productImages[product.id]} style={{ width: 72, height: 72 }} resizeMode="cover" />
+                  ) : (
+                    <View style={{ width: 72, height: 72, alignItems: "center", justifyContent: "center" }}>
+                      <Text style={{ fontSize: 32 }}>{product.emoji}</Text>
+                    </View>
+                  )}
                 </View>
                 <View style={{ flex: 1, gap: 4 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
@@ -391,7 +395,15 @@ function CartSheet({ fandom, onClose }: { fandom: Fandom; onClose: () => void })
             if (!product) return null;
             return (
               <View key={item.productId} style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                <Text style={{ fontSize: 28 }}>{product.emoji}</Text>
+                <View style={{ width: 48, height: 48, borderRadius: 10, overflow: "hidden", backgroundColor: colors.muted }}>
+                  {productImages[item.productId] ? (
+                    <Image source={productImages[item.productId]} style={{ width: 48, height: 48 }} resizeMode="cover" />
+                  ) : (
+                    <View style={{ width: 48, height: 48, alignItems: "center", justifyContent: "center" }}>
+                      <Text style={{ fontSize: 24 }}>{product.emoji}</Text>
+                    </View>
+                  )}
+                </View>
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={{ fontSize: 14, fontWeight: "600", color: colors.foreground }}>{product.name}</Text>
                   <Text style={{ fontSize: 13, color: fandom.color, fontWeight: "700" }}>₩{(product.price * item.quantity).toLocaleString()}</Text>
