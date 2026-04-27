@@ -142,7 +142,7 @@ export default function LoginScreen() {
               paddingHorizontal: 14, paddingVertical: 5, marginBottom: 16,
             }}>
               <Text style={{ fontSize: 12, color: colors.primary, fontWeight: "600", letterSpacing: 0.3 }}>
-                {language === "ko" ? "천 명의 가수, 천 개의 팬덤" : "1,000 artists, 1,000 fandoms"}
+                {language === "ko" ? "스타를 사랑하는 팬들의 연결 공간" : "A space where fans who love stars connect"}
               </Text>
             </View>
             <Text style={{

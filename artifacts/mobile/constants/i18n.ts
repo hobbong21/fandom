@@ -2,8 +2,8 @@ export type Language = "ko" | "en";
 
 const translations = {
   ko: {
-    appName: "스타링",
-    appTagline: "아티스트와 팬의 직접 소통",
+    appName: "팬노드",
+    appTagline: "스타를 사랑하는 팬들의 연결 공간",
 
     home: "홈",
     explore: "탐색",
@@ -83,8 +83,8 @@ const translations = {
     followingBtn: "팔로잉",
     joinBtn: "팔로우",
 
-    loginWelcome: "스타링에\n오신 것을 환영합니다",
-    loginSubtitle: "아티스트와 팬이 직접 소통하는 공간",
+    loginWelcome: "팬노드에\n오신 것을 환영합니다",
+    loginSubtitle: "스타를 사랑하는 팬들의 연결 공간",
     emailLabel: "이메일",
     passwordLabel: "비밀번호",
     confirmPasswordLabel: "비밀번호 확인",
@@ -122,16 +122,16 @@ const translations = {
     chonConnected: "명의 팬과 연결됨",
     royalFans: "로열 팬",
 
-    announcementTitle: "📢 스타링 오픈!",
+    announcementTitle: "📢 팬노드 오픈!",
     announcementContent:
-      "스타링에 오신 것을 환영합니다!\n\n스타링은 아티스트와 팬이 직접 소통하는 공간입니다:\n\n🎤 좋아하는 가수, 인디밴드, 트로트 아티스트를 팔로우하세요\n💌 아티스트의 공식 메시지를 가장 먼저 받아보세요\n🔴 라이브 방송 & 버스킹 즉각 알림\n💬 아티스트가 직접 댓글에 답글을 달아드려요\n\n지금 바로 좋아하는 아티스트를 찾아보세요!",
+      "팬노드에 오신 것을 환영합니다!\n\n팬노드는 스타를 사랑하는 팬들의 연결 공간입니다:\n\n🎤 좋아하는 가수, 인디밴드, 트로트 아티스트를 팔로우하세요\n💌 아티스트의 공식 메시지를 가장 먼저 받아보세요\n🔴 라이브 방송 & 버스킹 즉각 알림\n💬 아티스트가 직접 댓글에 답글을 달아드려요\n\n지금 바로 좋아하는 아티스트를 찾아보세요!",
     announcementClose: "시작하기",
     dontShowAgain: "다시 보지 않기",
   },
 
   en: {
-    appName: "Starling",
-    appTagline: "Direct connection between artists and fans",
+    appName: "팬노드",
+    appTagline: "A space where fans who love stars connect",
 
     home: "Home",
     explore: "Explore",
@@ -211,8 +211,8 @@ const translations = {
     followingBtn: "Following",
     joinBtn: "Follow",
 
-    loginWelcome: "Welcome to\nStarling",
-    loginSubtitle: "Where artists and fans connect directly",
+    loginWelcome: "Welcome to\n팬노드",
+    loginSubtitle: "A space where fans who love stars connect",
     emailLabel: "Email",
     passwordLabel: "Password",
     confirmPasswordLabel: "Confirm Password",
@@ -250,9 +250,9 @@ const translations = {
     chonConnected: "fans connected",
     royalFans: "Royal fans",
 
-    announcementTitle: "📢 Starling is Live!",
+    announcementTitle: "📢 팬노드 is Live!",
     announcementContent:
-      "Welcome to Starling!\n\nStarling is where artists and fans connect directly:\n\n🎤 Follow your favorite singers, indie bands, and trot artists\n💌 Get official messages from artists first\n🔴 Instant live & busking alerts\n💬 Artists reply directly to your comments\n\nFind your favorite artist now!",
+      "Welcome to 팬노드!\n\n팬노드 is a space where fans who love stars connect:\n\n🎤 Follow your favorite singers, indie bands, and trot artists\n💌 Get official messages from artists first\n🔴 Instant live & busking alerts\n💬 Artists reply directly to your comments\n\nFind your favorite artist now!",
     announcementClose: "Get Started",
     dontShowAgain: "Don't show again",
   },
