@@ -28,6 +28,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2, BookmarkPlus, ChevronDown, X, Check, FlaskConical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 function SystemPromptField({
   value,
@@ -291,6 +292,7 @@ function SystemPromptField({
 export default function Home() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [editingConversation, setEditingConversation] = useState<OpenaiConversation | null>(null);
@@ -400,6 +402,14 @@ export default function Home() {
           }
           setEditingConversation(null);
         },
+        onError: (error) => {
+          const description = (error.data as { error?: string } | null)?.error ?? error.message;
+          toast({
+            variant: "destructive",
+            title: "Failed to save workspace",
+            description,
+          });
+        },
       }
     );
   };
@@ -416,6 +426,14 @@ export default function Home() {
           setIsCreating(false);
           setNewTitle("");
           setNewSystemPrompt("");
+        },
+        onError: (error) => {
+          const description = (error.data as { error?: string } | null)?.error ?? error.message;
+          toast({
+            variant: "destructive",
+            title: "Failed to create workspace",
+            description,
+          });
         },
       }
     );
