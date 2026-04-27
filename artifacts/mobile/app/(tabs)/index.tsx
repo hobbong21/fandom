@@ -20,7 +20,7 @@ import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 const WEB_MAX_WIDTH = 680;
 
-function GreetingCard({ userName, colors }: { userName: string; colors: any }) {
+function GreetingCard({ userName, colors }: { userName: string; colors: ReturnType<typeof useColors> }) {
   const today = new Date();
   const days = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
   const dayStr = `${today.getMonth() + 1}월 ${today.getDate()}일 ${days[today.getDay()]}`;
@@ -49,7 +49,7 @@ function GreetingCard({ userName, colors }: { userName: string; colors: any }) {
   );
 }
 
-function QuickActions({ colors }: { colors: any }) {
+function QuickActions({ colors }: { colors: ReturnType<typeof useColors> }) {
   const actions = [
     { emoji: "💬", label: "대화방" },
     { emoji: "🎁", label: "선물" },
@@ -76,7 +76,7 @@ function QuickActions({ colors }: { colors: any }) {
   );
 }
 
-function LiveBanner({ colors }: { colors: any }) {
+function LiveBanner({ colors }: { colors: ReturnType<typeof useColors> }) {
   return (
     <Pressable
       style={{
@@ -116,7 +116,7 @@ function LiveBanner({ colors }: { colors: any }) {
 }
 
 function SectionHeader({ title, subtitle, onPress, colors }: {
-  title: string; subtitle?: string; onPress?: () => void; colors: any;
+  title: string; subtitle?: string; onPress?: () => void; colors: ReturnType<typeof useColors>;
 }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
