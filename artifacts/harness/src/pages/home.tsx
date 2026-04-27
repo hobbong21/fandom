@@ -616,6 +616,18 @@ export default function Home() {
                           SYS
                         </span>
                       )}
+                      {conv.messageCount !== undefined && (
+                        <span
+                          data-testid={`msg-count-${conv.id}`}
+                          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                            conv.messageCount === 0
+                              ? "text-muted-foreground/50 bg-muted/30"
+                              : "text-muted-foreground bg-muted/50"
+                          }`}
+                        >
+                          {conv.messageCount === 0 ? "0 msgs" : `${conv.messageCount} msg${conv.messageCount === 1 ? "" : "s"}`}
+                        </span>
+                      )}
                     </div>
                   </button>
                   <button
@@ -727,6 +739,7 @@ function ChatArea({ conversationId, draft, onDraftChange }: { conversationId: nu
       }
       
       queryClient.invalidateQueries({ queryKey: getGetOpenaiConversationQueryKey(conversationId) });
+      queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
     } catch (error) {
       console.error("Streaming error", error);
     } finally {

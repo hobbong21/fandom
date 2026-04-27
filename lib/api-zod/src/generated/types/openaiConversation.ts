@@ -12,4 +12,5 @@ export interface OpenaiConversation {
   model: string;
   systemPrompt?: string;
   createdAt: Date;
+  messageCount?: number;
 }

@@ -275,6 +275,8 @@ components:
         createdAt:
           type: string
           format: date-time
+        messageCount:
+          type: integer
       required:
         - id
         - title

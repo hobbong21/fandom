@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, conversations, messages } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 import {
   CreateOpenaiConversationBody,
   GetOpenaiConversationParams,
@@ -21,8 +21,17 @@ const router = Router();
 router.get("/conversations", async (_req, res) => {
   try {
     const result = await db
-      .select()
+      .select({
+        id: conversations.id,
+        title: conversations.title,
+        model: conversations.model,
+        systemPrompt: conversations.systemPrompt,
+        createdAt: conversations.createdAt,
+        messageCount: count(messages.id),
+      })
       .from(conversations)
+      .leftJoin(messages, eq(messages.conversationId, conversations.id))
+      .groupBy(conversations.id)
       .orderBy(desc(conversations.createdAt));
     res.json(result);
   } catch (err) {

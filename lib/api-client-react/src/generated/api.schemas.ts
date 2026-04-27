@@ -15,6 +15,7 @@ export interface OpenaiConversation {
   model: string;
   systemPrompt?: string;
   createdAt: string;
+  messageCount?: number;
 }
 
 export interface OpenaiMessage {

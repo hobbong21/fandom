@@ -32,6 +32,7 @@ export const ListOpenaiConversationsResponseItem = zod.object({
   model: zod.string(),
   systemPrompt: zod.string().optional(),
   createdAt: zod.coerce.date(),
+  messageCount: zod.number().optional(),
 });
 export const ListOpenaiConversationsResponse = zod.array(
   ListOpenaiConversationsResponseItem,
@@ -89,6 +90,7 @@ export const UpdateOpenaiConversationResponse = zod.object({
   model: zod.string(),
   systemPrompt: zod.string().optional(),
   createdAt: zod.coerce.date(),
+  messageCount: zod.number().optional(),
 });
 
 /**
