@@ -60,6 +60,7 @@ function SystemPromptField({
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
   const [testError, setTestError] = useState<string | null>(null);
+  const [testMessage, setTestMessage] = useState("");
 
   useEffect(() => {
     setTestResult(null);
@@ -76,7 +77,7 @@ function SystemPromptField({
       const response = await fetch("/api/openai/preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ systemPrompt: value, model }),
+        body: JSON.stringify({ systemPrompt: value, model, ...(testMessage.trim() ? { message: testMessage.trim() } : {}) }),
       });
 
       if (!response.ok) {
@@ -376,6 +377,15 @@ function SystemPromptField({
         className="font-mono bg-background h-24"
         data-testid={textareaTestId}
       />
+      {model && (
+        <Input
+          value={testMessage}
+          onChange={(e) => setTestMessage(e.target.value)}
+          placeholder='Test message (default: "Introduce yourself in one sentence.")'
+          className="text-xs h-7"
+          data-testid="input-test-message"
+        />
+      )}
       {(testResult !== null || testError !== null || isTesting) && (
         <div className="rounded-md border border-border bg-secondary/40 p-3 space-y-1" data-testid="test-result-container">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Test response</p>
