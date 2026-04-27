@@ -30,6 +30,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2, BookmarkPlus, ChevronDown, X, Check, FlaskConical, Pencil } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 function SystemPromptField({
   value,
@@ -271,34 +272,46 @@ function SystemPromptField({
               {!templates || templates.length === 0 ? (
                 <p className="text-xs text-muted-foreground px-1 py-2">No templates saved yet.</p>
               ) : (
+                <TooltipProvider delayDuration={400}>
                 <div className="space-y-0.5 max-h-48 overflow-y-auto">
                   {templates.map((t) => (
-                    <div
-                      key={t.id}
-                      className="flex items-center gap-1 px-1 py-1.5 rounded-md hover:bg-secondary group cursor-pointer"
-                      onClick={() => handleApplyTemplate(t)}
-                      data-testid={`template-item-${t.id}`}
-                    >
-                      <span className="flex-1 text-xs truncate">{t.name}</span>
-                      <button
-                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-accent text-muted-foreground transition-all"
-                        onClick={(e) => handleOpenEditTemplate(t, e)}
-                        data-testid={`btn-edit-template-${t.id}`}
-                        title="Edit template"
+                    <Tooltip key={t.id}>
+                      <TooltipTrigger asChild>
+                        <div
+                          className="flex items-center gap-1 px-1 py-1.5 rounded-md hover:bg-secondary group cursor-pointer"
+                          onClick={() => handleApplyTemplate(t)}
+                          data-testid={`template-item-${t.id}`}
+                        >
+                          <span className="flex-1 text-xs truncate">{t.name}</span>
+                          <button
+                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-accent text-muted-foreground transition-all"
+                            onClick={(e) => handleOpenEditTemplate(t, e)}
+                            data-testid={`btn-edit-template-${t.id}`}
+                            title="Edit template"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
+                          <button
+                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-all"
+                            onClick={(e) => handleDeleteTemplate(t.id, e)}
+                            data-testid={`btn-delete-template-${t.id}`}
+                            title="Delete template"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="left"
+                        className="max-w-xs w-64 max-h-48 overflow-y-auto whitespace-pre-wrap break-words text-xs font-mono leading-relaxed"
+                        data-testid={`template-preview-${t.id}`}
                       >
-                        <Pencil className="h-3 w-3" />
-                      </button>
-                      <button
-                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-all"
-                        onClick={(e) => handleDeleteTemplate(t.id, e)}
-                        data-testid={`btn-delete-template-${t.id}`}
-                        title="Delete template"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
+                        {t.content}
+                      </TooltipContent>
+                    </Tooltip>
                   ))}
                 </div>
+              </TooltipProvider>
               )}
               <div className="border-t border-border mt-2 pt-2">
                 {savingTemplate ? (
