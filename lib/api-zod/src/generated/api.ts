@@ -128,6 +128,34 @@ export const SendOpenaiMessageBody = zod.object({
 });
 
 /**
+ * @summary List all prompt templates
+ */
+export const ListOpenaiPromptTemplatesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  content: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListOpenaiPromptTemplatesResponse = zod.array(
+  ListOpenaiPromptTemplatesResponseItem,
+);
+
+/**
+ * @summary Create a new prompt template
+ */
+export const CreateOpenaiPromptTemplateBody = zod.object({
+  name: zod.string(),
+  content: zod.string(),
+});
+
+/**
+ * @summary Delete a prompt template
+ */
+export const DeleteOpenaiPromptTemplateParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
  * @summary Generate an image from a text prompt
  */
 export const GenerateOpenaiImageBody = zod.object({

@@ -183,6 +183,57 @@ paths:
           description: SSE stream of assistant text chunks
           content:
             text/event-stream: {}
+  /openai/prompt-templates:
+    get:
+      operationId: listOpenaiPromptTemplates
+      tags: [openai]
+      summary: List all prompt templates
+      responses:
+        "200":
+          description: List of prompt templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiPromptTemplate"
+    post:
+      operationId: createOpenaiPromptTemplate
+      tags: [openai]
+      summary: Create a new prompt template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOpenaiPromptTemplateBody"
+      responses:
+        "201":
+          description: Created prompt template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiPromptTemplate"
+  /openai/prompt-templates/{id}:
+    delete:
+      operationId: deleteOpenaiPromptTemplate
+      tags: [openai]
+      summary: Delete a prompt template
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
   /openai/generate-image:
     post:
       operationId: generateOpenaiImage
@@ -336,3 +387,30 @@ components:
           type: string
       required:
         - error
+    OpenaiPromptTemplate:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - content
+        - createdAt
+    CreateOpenaiPromptTemplateBody:
+      type: object
+      properties:
+        name:
+          type: string
+        content:
+          type: string
+      required:
+        - name
+        - content

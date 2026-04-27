@@ -7,6 +7,7 @@
  */
 
 export * from "./createOpenaiConversationBody";
+export * from "./createOpenaiPromptTemplateBody";
 export * from "./generateOpenaiImageBody";
 export * from "./generateOpenaiImageBodySize";
 export * from "./generateOpenaiImageResponse";
@@ -17,5 +18,6 @@ export * from "./openaiError";
 export * from "./openaiMessage";
 export * from "./openaiModel";
 export * from "./openaiModelsResponse";
+export * from "./openaiPromptTemplate";
 export * from "./sendOpenaiMessageBody";
 export * from "./updateOpenaiConversationBody";

@@ -7,11 +7,16 @@ import {
   useUpdateOpenaiConversation,
   useDeleteOpenaiConversation,
   useGetOpenaiConversation,
+  useListOpenaiPromptTemplates,
+  useCreateOpenaiPromptTemplate,
+  useDeleteOpenaiPromptTemplate,
   getListOpenaiConversationsQueryKey,
   getGetOpenaiConversationQueryKey,
+  getListOpenaiPromptTemplatesQueryKey,
   type OpenaiConversationWithMessages,
   type OpenaiConversation,
   type OpenaiModel,
+  type OpenaiPromptTemplate,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -19,9 +24,174 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2 } from "lucide-react";
+import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2, BookmarkPlus, ChevronDown, X, Check } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+
+function SystemPromptField({
+  value,
+  onChange,
+  textareaTestId,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  textareaTestId?: string;
+}) {
+  const { t } = useLanguage();
+  const queryClient = useQueryClient();
+  const { data: templates } = useListOpenaiPromptTemplates();
+  const createTemplate = useCreateOpenaiPromptTemplate();
+  const deleteTemplate = useDeleteOpenaiPromptTemplate();
+
+  const [templatePopoverOpen, setTemplatePopoverOpen] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+
+  const handleApplyTemplate = (template: OpenaiPromptTemplate) => {
+    onChange(template.content);
+    setTemplatePopoverOpen(false);
+  };
+
+  const handleDeleteTemplate = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteTemplate.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListOpenaiPromptTemplatesQueryKey() });
+        },
+      }
+    );
+  };
+
+  const handleSaveTemplate = () => {
+    if (!templateName.trim() || !value.trim()) return;
+    createTemplate.mutate(
+      { data: { name: templateName.trim(), content: value } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListOpenaiPromptTemplatesQueryKey() });
+          setSavingTemplate(false);
+          setTemplateName("");
+          setTemplatePopoverOpen(false);
+        },
+      }
+    );
+  };
+
+  const handleOpenSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSavingTemplate(true);
+    setTemplateName("");
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-xs text-muted-foreground">{t("system_prompt")}</label>
+        <Popover open={templatePopoverOpen} onOpenChange={(open) => { setTemplatePopoverOpen(open); if (!open) setSavingTemplate(false); }}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+              data-testid="btn-templates-popover"
+            >
+              Templates
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-0" align="end">
+            <div className="p-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-1">{t("system_prompt")} Templates</p>
+              {!templates || templates.length === 0 ? (
+                <p className="text-xs text-muted-foreground px-1 py-2">No templates saved yet.</p>
+              ) : (
+                <div className="space-y-0.5 max-h-48 overflow-y-auto">
+                  {templates.map((t) => (
+                    <div
+                      key={t.id}
+                      className="flex items-center gap-1 px-1 py-1.5 rounded-md hover:bg-secondary group cursor-pointer"
+                      onClick={() => handleApplyTemplate(t)}
+                      data-testid={`template-item-${t.id}`}
+                    >
+                      <span className="flex-1 text-xs truncate">{t.name}</span>
+                      <button
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-all"
+                        onClick={(e) => handleDeleteTemplate(t.id, e)}
+                        data-testid={`btn-delete-template-${t.id}`}
+                        title="Delete template"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="border-t border-border mt-2 pt-2">
+                {savingTemplate ? (
+                  <div className="space-y-1.5">
+                    <Input
+                      autoFocus
+                      value={templateName}
+                      onChange={(e) => setTemplateName(e.target.value)}
+                      placeholder="Template name..."
+                      className="h-7 text-xs"
+                      data-testid="input-template-name"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSaveTemplate();
+                        if (e.key === "Escape") setSavingTemplate(false);
+                      }}
+                    />
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        className="h-6 text-xs flex-1"
+                        onClick={handleSaveTemplate}
+                        disabled={!templateName.trim() || !value.trim() || createTemplate.isPending}
+                        data-testid="btn-confirm-save-template"
+                      >
+                        {createTemplate.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Check className="h-3 w-3 mr-1" />}
+                        Save
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 text-xs"
+                        onClick={() => setSavingTemplate(false)}
+                        data-testid="btn-cancel-save-template"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="flex items-center gap-1.5 w-full px-1 py-1 text-xs text-muted-foreground hover:text-foreground rounded hover:bg-secondary transition-all disabled:opacity-40 disabled:pointer-events-none"
+                    onClick={handleOpenSave}
+                    disabled={!value.trim()}
+                    data-testid="btn-save-as-template"
+                  >
+                    <BookmarkPlus className="h-3.5 w-3.5" />
+                    Save current prompt as template
+                  </button>
+                )}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+      <Textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="You are a helpful assistant..."
+        className="font-mono bg-background h-24"
+        data-testid={textareaTestId}
+      />
+    </div>
+  );
+}
 
 export default function Home() {
   const { t } = useLanguage();
@@ -30,12 +200,10 @@ export default function Home() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingConversation, setEditingConversation] = useState<OpenaiConversation | null>(null);
 
-  // Form states for new conversation
   const [newTitle, setNewTitle] = useState("");
   const [newModel, setNewModel] = useState<OpenaiModel | "">("");
   const [newSystemPrompt, setNewSystemPrompt] = useState("");
 
-  // Form states for editing conversation
   const [editTitle, setEditTitle] = useState("");
   const [editModel, setEditModel] = useState<OpenaiModel | "">("");
   const [editSystemPrompt, setEditSystemPrompt] = useState("");
@@ -157,16 +325,11 @@ export default function Home() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">{t("system_prompt")}</label>
-              <Textarea
-                value={editSystemPrompt}
-                onChange={(e) => setEditSystemPrompt(e.target.value)}
-                placeholder="You are a helpful assistant..."
-                className="font-mono bg-background h-24"
-                data-testid="input-edit-system-prompt"
-              />
-            </div>
+            <SystemPromptField
+              value={editSystemPrompt}
+              onChange={setEditSystemPrompt}
+              textareaTestId="input-edit-system-prompt"
+            />
           </div>
           {confirmingDelete ? (
             <div className="border border-destructive/40 rounded-md p-3 bg-destructive/5 space-y-3">
@@ -256,16 +419,11 @@ export default function Home() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-muted-foreground">{t("system_prompt")}</label>
-                  <Textarea 
-                    value={newSystemPrompt} 
-                    onChange={(e) => setNewSystemPrompt(e.target.value)} 
-                    placeholder="You are a helpful assistant..."
-                    className="font-mono bg-background h-24"
-                    data-testid="input-system-prompt"
-                  />
-                </div>
+                <SystemPromptField
+                  value={newSystemPrompt}
+                  onChange={setNewSystemPrompt}
+                  textareaTestId="input-system-prompt"
+                />
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsCreating(false)}>{t("cancel")}</Button>
@@ -373,7 +531,6 @@ function ChatArea({ conversationId }: { conversationId: number }) {
     setIsStreaming(true);
     setStreamedContent("");
 
-    // Optimistically update UI to show user message
     queryClient.setQueryData<OpenaiConversationWithMessages>(getGetOpenaiConversationQueryKey(conversationId), (old) => {
       if (!old) return old;
       return {
@@ -407,7 +564,7 @@ function ChatArea({ conversationId }: { conversationId: number }) {
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             const dataStr = line.slice(6);
-            if (dataStr === "[DONE]") continue; // Handle potential standard OpenAI format
+            if (dataStr === "[DONE]") continue;
             
             try {
               const data = JSON.parse(dataStr);
@@ -424,7 +581,6 @@ function ChatArea({ conversationId }: { conversationId: number }) {
         }
       }
       
-      // Invalidate to get final saved message
       queryClient.invalidateQueries({ queryKey: getGetOpenaiConversationQueryKey(conversationId) });
     } catch (error) {
       console.error("Streaming error", error);

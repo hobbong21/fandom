@@ -18,6 +18,7 @@ import type {
 
 import type {
   CreateOpenaiConversationBody,
+  CreateOpenaiPromptTemplateBody,
   GenerateOpenaiImageBody,
   GenerateOpenaiImageResponse,
   HealthStatus,
@@ -26,6 +27,7 @@ import type {
   OpenaiError,
   OpenaiMessage,
   OpenaiModelsResponse,
+  OpenaiPromptTemplate,
   SendOpenaiMessageBody,
   UpdateOpenaiConversationBody,
 } from "./api.schemas";
@@ -789,6 +791,256 @@ export const useSendOpenaiMessage = <
   TContext
 > => {
   return useMutation(getSendOpenaiMessageMutationOptions(options));
+};
+
+/**
+ * @summary List all prompt templates
+ */
+export const getListOpenaiPromptTemplatesUrl = () => {
+  return `/api/openai/prompt-templates`;
+};
+
+export const listOpenaiPromptTemplates = async (
+  options?: RequestInit,
+): Promise<OpenaiPromptTemplate[]> => {
+  return customFetch<OpenaiPromptTemplate[]>(
+    getListOpenaiPromptTemplatesUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListOpenaiPromptTemplatesQueryKey = () => {
+  return [`/api/openai/prompt-templates`] as const;
+};
+
+export const getListOpenaiPromptTemplatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listOpenaiPromptTemplates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listOpenaiPromptTemplates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListOpenaiPromptTemplatesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listOpenaiPromptTemplates>>
+  > = ({ signal }) => listOpenaiPromptTemplates({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listOpenaiPromptTemplates>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListOpenaiPromptTemplatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listOpenaiPromptTemplates>>
+>;
+export type ListOpenaiPromptTemplatesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all prompt templates
+ */
+
+export function useListOpenaiPromptTemplates<
+  TData = Awaited<ReturnType<typeof listOpenaiPromptTemplates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listOpenaiPromptTemplates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListOpenaiPromptTemplatesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new prompt template
+ */
+export const getCreateOpenaiPromptTemplateUrl = () => {
+  return `/api/openai/prompt-templates`;
+};
+
+export const createOpenaiPromptTemplate = async (
+  createOpenaiPromptTemplateBody: CreateOpenaiPromptTemplateBody,
+  options?: RequestInit,
+): Promise<OpenaiPromptTemplate> => {
+  return customFetch<OpenaiPromptTemplate>(getCreateOpenaiPromptTemplateUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createOpenaiPromptTemplateBody),
+  });
+};
+
+export const getCreateOpenaiPromptTemplateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createOpenaiPromptTemplate>>,
+    TError,
+    { data: BodyType<CreateOpenaiPromptTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createOpenaiPromptTemplate>>,
+  TError,
+  { data: BodyType<CreateOpenaiPromptTemplateBody> },
+  TContext
+> => {
+  const mutationKey = ["createOpenaiPromptTemplate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createOpenaiPromptTemplate>>,
+    { data: BodyType<CreateOpenaiPromptTemplateBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createOpenaiPromptTemplate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateOpenaiPromptTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createOpenaiPromptTemplate>>
+>;
+export type CreateOpenaiPromptTemplateMutationBody =
+  BodyType<CreateOpenaiPromptTemplateBody>;
+export type CreateOpenaiPromptTemplateMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new prompt template
+ */
+export const useCreateOpenaiPromptTemplate = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createOpenaiPromptTemplate>>,
+    TError,
+    { data: BodyType<CreateOpenaiPromptTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createOpenaiPromptTemplate>>,
+  TError,
+  { data: BodyType<CreateOpenaiPromptTemplateBody> },
+  TContext
+> => {
+  return useMutation(getCreateOpenaiPromptTemplateMutationOptions(options));
+};
+
+/**
+ * @summary Delete a prompt template
+ */
+export const getDeleteOpenaiPromptTemplateUrl = (id: number) => {
+  return `/api/openai/prompt-templates/${id}`;
+};
+
+export const deleteOpenaiPromptTemplate = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteOpenaiPromptTemplateUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteOpenaiPromptTemplateMutationOptions = <
+  TError = ErrorType<OpenaiError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteOpenaiPromptTemplate>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteOpenaiPromptTemplate>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteOpenaiPromptTemplate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteOpenaiPromptTemplate>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteOpenaiPromptTemplate(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteOpenaiPromptTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteOpenaiPromptTemplate>>
+>;
+
+export type DeleteOpenaiPromptTemplateMutationError = ErrorType<OpenaiError>;
+
+/**
+ * @summary Delete a prompt template
+ */
+export const useDeleteOpenaiPromptTemplate = <
+  TError = ErrorType<OpenaiError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteOpenaiPromptTemplate>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteOpenaiPromptTemplate>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteOpenaiPromptTemplateMutationOptions(options));
 };
 
 /**

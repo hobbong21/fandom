@@ -83,3 +83,15 @@ export interface GenerateOpenaiImageResponse {
 export interface OpenaiError {
   error: string;
 }
+
+export interface OpenaiPromptTemplate {
+  id: number;
+  name: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface CreateOpenaiPromptTemplateBody {
+  name: string;
+  content: string;
+}
