@@ -222,9 +222,16 @@ export default function Home() {
                     <div className={`font-medium truncate ${selectedId === conv.id ? "text-primary" : "text-foreground"}`}>
                       {conv.title}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1 flex items-center">
-                      <Cpu className="h-3 w-3 mr-1" />
-                      {conv.model}
+                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                      <span className="flex items-center">
+                        <Cpu className="h-3 w-3 mr-1" />
+                        {conv.model}
+                      </span>
+                      {conv.systemPrompt && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider bg-primary/15 text-primary border border-primary/25" title={conv.systemPrompt}>
+                          SYS
+                        </span>
+                      )}
                     </div>
                   </button>
                   <button
@@ -361,8 +368,13 @@ function ChatArea({ conversationId }: { conversationId: number }) {
           {conversation.model}
         </div>
         {conversation.systemPrompt && (
-          <div className="ml-4 text-xs text-muted-foreground truncate max-w-md" title={conversation.systemPrompt}>
-            <span className="font-bold mr-1">SYS:</span> {conversation.systemPrompt}
+          <div className="ml-3 flex items-center gap-2 min-w-0">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider bg-primary/15 text-primary border border-primary/25 shrink-0" data-testid="system-prompt-indicator">
+              SYS
+            </span>
+            <span className="text-xs text-muted-foreground truncate font-mono" title={conversation.systemPrompt}>
+              {conversation.systemPrompt}
+            </span>
           </div>
         )}
       </div>
