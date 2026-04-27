@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2, BookmarkPlus, ChevronDown, X, Check, FlaskConical } from "lucide-react";
@@ -305,6 +305,38 @@ export default function Home() {
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
+  const [draftInput, setDraftInput] = useState("");
+  // undefined = no pending switch; null = switch to no selection; number = switch to that id
+  const [pendingSwitchId, setPendingSwitchId] = useState<number | null | undefined>(undefined);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+
+  // Central guard: all conversation-selection changes go through here.
+  // force=true skips the draft check (e.g. when the current conversation is deleted).
+  const attemptSwitchTo = (newId: number | null, force = false) => {
+    if (newId === selectedId) return;
+    if (!force && draftInput.trim()) {
+      setPendingSwitchId(newId);
+      setShowUnsavedDialog(true);
+    } else {
+      setSelectedId(newId);
+      setDraftInput("");
+    }
+  };
+
+  const handleConfirmSwitch = () => {
+    if (pendingSwitchId !== undefined) {
+      setSelectedId(pendingSwitchId);
+      setDraftInput("");
+    }
+    setPendingSwitchId(undefined);
+    setShowUnsavedDialog(false);
+  };
+
+  const handleCancelSwitch = () => {
+    setPendingSwitchId(undefined);
+    setShowUnsavedDialog(false);
+  };
+
   const { data: conversations, isLoading: isLoadingConversations } = useListOpenaiConversations();
   const { data: modelsData } = useListOpenaiModels();
   const models = modelsData?.models ?? [];
@@ -339,7 +371,8 @@ export default function Home() {
       (old) => old?.filter((c) => c.id !== deletedId) ?? []
     );
     if (selectedId === deletedId) {
-      setSelectedId(null);
+      // Force-switch: the conversation is gone so the draft is irrelevant
+      attemptSwitchTo(null, true);
     }
     closeEditDialog();
     deleteConversation.mutate(
@@ -379,7 +412,7 @@ export default function Home() {
       {
         onSuccess: (data) => {
           queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
-          setSelectedId(data.id);
+          attemptSwitchTo(data.id);
           setIsCreating(false);
           setNewTitle("");
           setNewSystemPrompt("");
@@ -390,6 +423,20 @@ export default function Home() {
 
   return (
     <div className="flex h-full w-full">
+      {/* Unsaved draft confirmation dialog */}
+      <Dialog open={showUnsavedDialog} onOpenChange={(open) => { if (!open) handleCancelSwitch(); }}>
+        <DialogContent className="sm:max-w-[360px] bg-card border-border text-foreground" data-testid="dialog-unsaved-draft">
+          <DialogHeader>
+            <DialogTitle>Unsent message</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>You have an unsent message in this conversation. If you switch now, your draft will be lost.</DialogDescription>
+          <DialogFooter className="flex-row justify-end gap-2 mt-2">
+            <Button variant="outline" onClick={handleCancelSwitch} data-testid="btn-stay-conversation">Stay</Button>
+            <Button variant="destructive" onClick={handleConfirmSwitch} data-testid="btn-discard-and-switch">Discard &amp; switch</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Conversation Dialog */}
       <Dialog open={!!editingConversation} onOpenChange={(open) => !open && closeEditDialog()}>
         <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground">
@@ -553,7 +600,7 @@ export default function Home() {
                 >
                   <button
                     data-testid={`chat-item-${conv.id}`}
-                    onClick={() => setSelectedId(conv.id)}
+                    onClick={() => attemptSwitchTo(conv.id)}
                     className="flex-1 min-w-0 text-left"
                   >
                     <div className={`font-medium truncate ${selectedId === conv.id ? "text-primary" : "text-foreground"}`}>
@@ -589,7 +636,7 @@ export default function Home() {
 
       {/* Right panel - Chat Area */}
       <div className="flex-1 flex flex-col bg-background min-w-0">
-        {selectedId ? <ChatArea conversationId={selectedId} /> : (
+        {selectedId ? <ChatArea conversationId={selectedId} draft={draftInput} onDraftChange={setDraftInput} /> : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
               <Terminal className="h-12 w-12 mx-auto mb-4 opacity-20" />
@@ -602,14 +649,15 @@ export default function Home() {
   );
 }
 
-function ChatArea({ conversationId }: { conversationId: number }) {
+function ChatArea({ conversationId, draft, onDraftChange }: { conversationId: number; draft: string; onDraftChange: (val: string) => void }) {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const { data: conversation, isLoading } = useGetOpenaiConversation(conversationId, {
     query: { enabled: !!conversationId, queryKey: getGetOpenaiConversationQueryKey(conversationId) }
   });
-  
-  const [input, setInput] = useState("");
+
+  const input = draft;
+  const setInput = onDraftChange;
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamedContent, setStreamedContent] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
