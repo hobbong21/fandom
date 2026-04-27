@@ -47,3 +47,33 @@ jobs:
 
       - name: Build
         run: pnpm -r --if-present --filter '!./artifacts/mobile' run build
+
+  deploy:
+    name: Deploy to Production
+    needs: typecheck-and-build
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    steps:
+      - name: Trigger Replit deployment
+        env:
+          REPLIT_API_KEY: ${{ secrets.REPLIT_API_KEY }}
+          REPLIT_REPL_ID: ${{ secrets.REPLIT_REPL_ID }}
+        run: |
+          response=$(curl --silent --show-error --fail \
+            --request POST \
+            --url "https://api.replit.com/v0/repls/${REPLIT_REPL_ID}/deployments" \
+            --header "Authorization: Bearer ${REPLIT_API_KEY}" \
+            --header "Content-Type: application/json" \
+            --write-out "\n%{http_code}")
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | head -n -1)
+          echo "HTTP status: $http_code"
+          echo "Response: $body"
+          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+            echo "Deployment request failed with status $http_code"
+            exit 1
+          fi
+          echo "Deployment triggered successfully."
