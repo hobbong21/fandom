@@ -4,6 +4,7 @@ import {
   useListOpenaiConversations,
   useCreateOpenaiConversation,
   useUpdateOpenaiConversation,
+  useDeleteOpenaiConversation,
   useGetOpenaiConversation,
   getListOpenaiConversationsQueryKey,
   getGetOpenaiConversationQueryKey,
@@ -17,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2 } from "lucide-react";
+import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const MODELS = ["gpt-5-mini", "gpt-5.4", "o4-mini"];
@@ -39,15 +40,48 @@ export default function Home() {
   const [editModel, setEditModel] = useState(MODELS[0]);
   const [editSystemPrompt, setEditSystemPrompt] = useState("");
 
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
   const { data: conversations, isLoading: isLoadingConversations } = useListOpenaiConversations();
   const createConversation = useCreateOpenaiConversation();
   const updateConversation = useUpdateOpenaiConversation();
+  const deleteConversation = useDeleteOpenaiConversation();
 
   const openEditDialog = (conv: OpenaiConversation) => {
     setEditingConversation(conv);
     setEditTitle(conv.title);
     setEditModel(conv.model);
     setEditSystemPrompt(conv.systemPrompt ?? "");
+    setConfirmingDelete(false);
+  };
+
+  const closeEditDialog = () => {
+    setEditingConversation(null);
+    setConfirmingDelete(false);
+  };
+
+  const handleDelete = () => {
+    if (!editingConversation) return;
+    const deletedId = editingConversation.id;
+    queryClient.setQueryData<OpenaiConversation[]>(
+      getListOpenaiConversationsQueryKey(),
+      (old) => old?.filter((c) => c.id !== deletedId) ?? []
+    );
+    if (selectedId === deletedId) {
+      setSelectedId(null);
+    }
+    closeEditDialog();
+    deleteConversation.mutate(
+      { id: deletedId },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+        },
+        onError: () => {
+          queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+        },
+      }
+    );
   };
 
   const handleUpdate = async () => {
@@ -86,7 +120,7 @@ export default function Home() {
   return (
     <div className="flex h-full w-full">
       {/* Edit Conversation Dialog */}
-      <Dialog open={!!editingConversation} onOpenChange={(open) => !open && setEditingConversation(null)}>
+      <Dialog open={!!editingConversation} onOpenChange={(open) => !open && closeEditDialog()}>
         <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Edit Workspace</DialogTitle>
@@ -126,12 +160,52 @@ export default function Home() {
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingConversation(null)}>{t("cancel")}</Button>
-            <Button onClick={handleUpdate} disabled={!editTitle || updateConversation.isPending} data-testid="btn-save-edit">
-              {updateConversation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Save
+          {confirmingDelete ? (
+            <div className="border border-destructive/40 rounded-md p-3 bg-destructive/5 space-y-3">
+              <p className="text-sm text-destructive font-medium">Delete this workspace and all its messages?</p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setConfirmingDelete(false)}
+                  data-testid="btn-cancel-delete"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1"
+                  onClick={handleDelete}
+                  disabled={deleteConversation.isPending}
+                  data-testid="btn-confirm-delete"
+                >
+                  {deleteConversation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Yes, delete
+                </Button>
+              </div>
+            </div>
+          ) : null}
+          <DialogFooter className="flex-row items-center justify-between sm:justify-between gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => setConfirmingDelete(true)}
+              disabled={confirmingDelete}
+              data-testid="btn-delete-conversation"
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              Delete
             </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={closeEditDialog}>{t("cancel")}</Button>
+              <Button onClick={handleUpdate} disabled={!editTitle || updateConversation.isPending} data-testid="btn-save-edit">
+                {updateConversation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Save
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
