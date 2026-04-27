@@ -26,17 +26,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2, BookmarkPlus, ChevronDown, X, Check } from "lucide-react";
+import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2, BookmarkPlus, ChevronDown, X, Check, FlaskConical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function SystemPromptField({
   value,
   onChange,
   textareaTestId,
+  model,
 }: {
   value: string;
   onChange: (val: string) => void;
   textareaTestId?: string;
+  model?: string;
 }) {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
@@ -47,6 +49,65 @@ function SystemPromptField({
   const [templatePopoverOpen, setTemplatePopoverOpen] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
+  const [testError, setTestError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTestResult(null);
+    setTestError(null);
+  }, [value, model]);
+
+  const handleTest = async () => {
+    if (!model || !value.trim() || isTesting) return;
+    setIsTesting(true);
+    setTestResult("");
+    setTestError(null);
+
+    try {
+      const response = await fetch("/api/openai/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ systemPrompt: value, model }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: "Request failed" }));
+        setTestError(err.error ?? "Request failed");
+        setIsTesting(false);
+        return;
+      }
+
+      if (!response.body) throw new Error("No response body");
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullText = "";
+
+      while (true) {
+        const { done, value: chunk } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(chunk, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const parsed = JSON.parse(line.slice(6));
+              if (parsed.content) {
+                fullText += parsed.content;
+                setTestResult(fullText);
+              }
+            } catch {}
+          }
+        }
+      }
+    } catch (err) {
+      setTestError("Something went wrong. Please try again.");
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   const handleApplyTemplate = (template: OpenaiPromptTemplate) => {
     onChange(template.content);
@@ -90,6 +151,22 @@ function SystemPromptField({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-xs text-muted-foreground">{t("system_prompt")}</label>
+        <div className="flex items-center gap-1">
+          {model && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+              onClick={handleTest}
+              disabled={!value.trim() || isTesting}
+              data-testid="btn-test-system-prompt"
+              title="Test this system prompt"
+            >
+              {isTesting ? <Loader2 className="h-3 w-3 animate-spin" /> : <FlaskConical className="h-3 w-3" />}
+              Test
+            </Button>
+          )}
         <Popover open={templatePopoverOpen} onOpenChange={(open) => { setTemplatePopoverOpen(open); if (!open) setSavingTemplate(false); }}>
           <PopoverTrigger asChild>
             <Button
@@ -181,6 +258,7 @@ function SystemPromptField({
             </div>
           </PopoverContent>
         </Popover>
+        </div>
       </div>
       <Textarea
         value={value}
@@ -189,6 +267,23 @@ function SystemPromptField({
         className="font-mono bg-background h-24"
         data-testid={textareaTestId}
       />
+      {(testResult !== null || testError !== null || isTesting) && (
+        <div className="rounded-md border border-border bg-secondary/40 p-3 space-y-1" data-testid="test-result-container">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Test response</p>
+          {testError ? (
+            <p className="text-xs text-destructive" data-testid="test-result-error">{testError}</p>
+          ) : (
+            <p className="text-xs text-foreground whitespace-pre-wrap" data-testid="test-result-content">
+              {testResult
+                ? testResult
+                : isTesting
+                  ? <span className="text-muted-foreground">Generating…</span>
+                  : <span className="text-muted-foreground italic">No response received.</span>
+              }
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -329,6 +424,7 @@ export default function Home() {
               value={editSystemPrompt}
               onChange={setEditSystemPrompt}
               textareaTestId="input-edit-system-prompt"
+              model={editModel || undefined}
             />
           </div>
           {confirmingDelete ? (
@@ -423,6 +519,7 @@ export default function Home() {
                   value={newSystemPrompt}
                   onChange={setNewSystemPrompt}
                   textareaTestId="input-system-prompt"
+                  model={newModel || undefined}
                 />
               </div>
               <DialogFooter>
