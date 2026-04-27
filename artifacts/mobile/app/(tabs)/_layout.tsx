@@ -22,6 +22,7 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { useXP } from "@/context/XPContext";
 import { getTierInfo } from "@/constants/fanTiers";
+import { TopHeader } from "@/components/TopHeader";
 
 function NativeTabLayout() {
   const { t } = useLanguage();
@@ -35,10 +36,6 @@ function NativeTabLayout() {
         <Icon sf={{ default: "safari", selected: "safari.fill" }} />
         <Label>{t.explore}</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="notifications">
-        <Icon sf={{ default: "bell", selected: "bell.fill" }} />
-        <Label>{t.notifications}</Label>
-      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person.circle", selected: "person.circle.fill" }} />
         <Label>{t.profile}</Label>
@@ -51,7 +48,7 @@ type NavItem = { name: string; icon: string; label: string; badge?: number };
 
 function WebSidebar({ navItems }: { navItems: NavItem[] }) {
   const colors = useColors();
-  const { t, language } = useLanguage();
+  const { t, language, toggleLanguage } = useLanguage();
   const { user } = useAuth();
   const { totalXP } = useXP();
   const pathname = usePathname();
@@ -167,6 +164,20 @@ function WebSidebar({ navItems }: { navItems: NavItem[] }) {
           <Text style={{ fontSize: 14, fontWeight: "700", color: "#ffffff" }}>
             {t.exploreFandoms}
           </Text>
+        </Pressable>
+        <Pressable
+          onPress={toggleLanguage}
+          style={[styles.langToggleBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
+        >
+          <Feather name="globe" size={14} color={colors.mutedForeground} />
+          <Text style={{ fontSize: 12, fontWeight: "700", color: colors.foreground }}>
+            {language === "ko" ? "한국어" : "English"}
+          </Text>
+          <View style={[styles.langBadge, { backgroundColor: colors.primary }]}>
+            <Text style={{ fontSize: 10, fontWeight: "800", color: "#ffffff" }}>
+              {language === "ko" ? "KO" : "EN"}
+            </Text>
+          </View>
         </Pressable>
       </View>
     </View>
@@ -424,6 +435,8 @@ function ClassicTabLayout() {
         name="index"
         options={{
           title: t.home,
+          headerShown: true,
+          header: () => <TopHeader title={t.home} />,
           tabBarIcon: ({ color, focused }) =>
             isIOS ? (
               <SymbolView name={focused ? "house.fill" : "house"} tintColor={color} size={24} />
@@ -436,6 +449,8 @@ function ClassicTabLayout() {
         name="explore"
         options={{
           title: t.explore,
+          headerShown: true,
+          header: () => <TopHeader title={t.explore} />,
           tabBarIcon: ({ color, focused }) =>
             isIOS ? (
               <SymbolView name={focused ? "safari.fill" : "safari"} tintColor={color} size={24} />
@@ -448,20 +463,16 @@ function ClassicTabLayout() {
         name="notifications"
         options={{
           title: t.notifications,
-          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: "#ef4444", fontSize: 10 },
-          tabBarIcon: ({ color, focused }) =>
-            isIOS ? (
-              <SymbolView name={focused ? "bell.fill" : "bell"} tintColor={color} size={24} />
-            ) : (
-              <Feather name="bell" size={22} color={color} />
-            ),
+          headerShown: false,
+          tabBarButton: () => null,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: t.profile,
+          headerShown: true,
+          header: () => <TopHeader title={t.profile} />,
           tabBarIcon: ({ color, focused }) =>
             isIOS ? (
               <SymbolView name={focused ? "person.circle.fill" : "person.circle"} tintColor={color} size={24} />
@@ -574,6 +585,7 @@ const styles = StyleSheet.create({
   sidebarFooter: {
     padding: 14,
     borderTopWidth: 1,
+    gap: 10,
   },
   ctaBtn: {
     flexDirection: "row",
@@ -582,6 +594,20 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 12,
     borderRadius: 14,
+  },
+  langToggleBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  langBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 10,
   },
   webContent: {
     flex: 1,

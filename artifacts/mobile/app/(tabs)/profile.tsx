@@ -82,13 +82,15 @@ export default function ProfileScreen() {
 
   const content = (
     <>
-      <View style={[styles.header, { paddingTop: isWeb ? 28 : insets.top + 12 }]}>
+      <View style={[styles.header, { paddingTop: isWeb ? 28 : 8 }]}>
         <Text style={styles.title}>{t.profileTitle}</Text>
         <View style={styles.headerActions}>
-          <Pressable style={styles.langToggle} onPress={toggleLanguage}>
-            <Feather name="globe" size={14} color={colors.primary} />
-            <Text style={styles.langToggleText}>{language === "ko" ? "EN" : "한국어"}</Text>
-          </Pressable>
+          {isWeb && (
+            <Pressable style={styles.langToggle} onPress={toggleLanguage}>
+              <Feather name="globe" size={14} color={colors.primary} />
+              <Text style={styles.langToggleText}>{language === "ko" ? "EN" : "한국어"}</Text>
+            </Pressable>
+          )}
           <Pressable style={styles.logoutBtn} onPress={handleLogout}>
             <Feather name="log-out" size={16} color={colors.destructive} />
           </Pressable>

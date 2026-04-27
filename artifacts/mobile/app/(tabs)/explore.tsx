@@ -156,7 +156,7 @@ export default function ExploreScreen() {
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 100 }}
-        ListHeaderComponent={header(insets.top + 12)}
+        ListHeaderComponent={header(12)}
         renderItem={({ item }) => <FandomCard fandom={item} />}
         ListEmptyComponent={emptyComponent}
       />

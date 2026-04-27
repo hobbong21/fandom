@@ -456,36 +456,6 @@ export default function HomeScreen() {
   /* ── MOBILE ── */
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Mobile sticky header */}
-      <View style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingTop: insets.top + 10,
-        paddingBottom: 12,
-        paddingHorizontal: 18,
-        backgroundColor: colors.background,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-      }}>
-        <View>
-          <Text style={{ fontSize: 26, fontWeight: "900", color: colors.primary, letterSpacing: -0.8 }}>
-            {t.appName}
-          </Text>
-          <Text style={{ fontSize: 11, color: colors.mutedForeground, marginTop: 1 }}>
-            {(t as any).appTagline}
-          </Text>
-        </View>
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <Pressable
-            style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: colors.muted, alignItems: "center", justifyContent: "center" }}
-            onPress={() => router.push("/explore")}
-          >
-            <Feather name="search" size={18} color={colors.foreground} />
-          </Pressable>
-        </View>
-      </View>
-
       <FlatList
         data={shownPosts}
         keyExtractor={(item) => item.id}
