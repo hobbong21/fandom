@@ -215,6 +215,35 @@ paths:
               schema:
                 $ref: "#/components/schemas/OpenaiPromptTemplate"
   /openai/prompt-templates/{id}:
+    patch:
+      operationId: updateOpenaiPromptTemplate
+      tags: [openai]
+      summary: Update a prompt template's name and/or content
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOpenaiPromptTemplateBody"
+      responses:
+        "200":
+          description: Updated prompt template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiPromptTemplate"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
     delete:
       operationId: deleteOpenaiPromptTemplate
       tags: [openai]
@@ -416,3 +445,10 @@ components:
       required:
         - name
         - content
+    UpdateOpenaiPromptTemplateBody:
+      type: object
+      properties:
+        name:
+          type: string
+        content:
+          type: string

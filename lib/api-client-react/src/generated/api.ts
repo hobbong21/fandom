@@ -30,6 +30,7 @@ import type {
   OpenaiPromptTemplate,
   SendOpenaiMessageBody,
   UpdateOpenaiConversationBody,
+  UpdateOpenaiPromptTemplateBody,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -957,6 +958,97 @@ export const useCreateOpenaiPromptTemplate = <
   TContext
 > => {
   return useMutation(getCreateOpenaiPromptTemplateMutationOptions(options));
+};
+
+/**
+ * @summary Update a prompt template's name and/or content
+ */
+export const getUpdateOpenaiPromptTemplateUrl = (id: number) => {
+  return `/api/openai/prompt-templates/${id}`;
+};
+
+export const updateOpenaiPromptTemplate = async (
+  id: number,
+  updateOpenaiPromptTemplateBody: UpdateOpenaiPromptTemplateBody,
+  options?: RequestInit,
+): Promise<OpenaiPromptTemplate> => {
+  return customFetch<OpenaiPromptTemplate>(
+    getUpdateOpenaiPromptTemplateUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateOpenaiPromptTemplateBody),
+    },
+  );
+};
+
+export const getUpdateOpenaiPromptTemplateMutationOptions = <
+  TError = ErrorType<OpenaiError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateOpenaiPromptTemplate>>,
+    TError,
+    { id: number; data: BodyType<UpdateOpenaiPromptTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateOpenaiPromptTemplate>>,
+  TError,
+  { id: number; data: BodyType<UpdateOpenaiPromptTemplateBody> },
+  TContext
+> => {
+  const mutationKey = ["updateOpenaiPromptTemplate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateOpenaiPromptTemplate>>,
+    { id: number; data: BodyType<UpdateOpenaiPromptTemplateBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateOpenaiPromptTemplate(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateOpenaiPromptTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateOpenaiPromptTemplate>>
+>;
+export type UpdateOpenaiPromptTemplateMutationBody =
+  BodyType<UpdateOpenaiPromptTemplateBody>;
+export type UpdateOpenaiPromptTemplateMutationError = ErrorType<OpenaiError>;
+
+/**
+ * @summary Update a prompt template's name and/or content
+ */
+export const useUpdateOpenaiPromptTemplate = <
+  TError = ErrorType<OpenaiError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateOpenaiPromptTemplate>>,
+    TError,
+    { id: number; data: BodyType<UpdateOpenaiPromptTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateOpenaiPromptTemplate>>,
+  TError,
+  { id: number; data: BodyType<UpdateOpenaiPromptTemplateBody> },
+  TContext
+> => {
+  return useMutation(getUpdateOpenaiPromptTemplateMutationOptions(options));
 };
 
 /**

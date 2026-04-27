@@ -96,3 +96,8 @@ export interface CreateOpenaiPromptTemplateBody {
   name: string;
   content: string;
 }
+
+export interface UpdateOpenaiPromptTemplateBody {
+  name?: string;
+  content?: string;
+}

@@ -151,6 +151,25 @@ export const CreateOpenaiPromptTemplateBody = zod.object({
 });
 
 /**
+ * @summary Update a prompt template's name and/or content
+ */
+export const UpdateOpenaiPromptTemplateParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateOpenaiPromptTemplateBody = zod.object({
+  name: zod.string().optional(),
+  content: zod.string().optional(),
+});
+
+export const UpdateOpenaiPromptTemplateResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  content: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
  * @summary Delete a prompt template
  */
 export const DeleteOpenaiPromptTemplateParams = zod.object({

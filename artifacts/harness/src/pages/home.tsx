@@ -10,6 +10,7 @@ import {
   useListOpenaiPromptTemplates,
   useCreateOpenaiPromptTemplate,
   useDeleteOpenaiPromptTemplate,
+  useUpdateOpenaiPromptTemplate,
   getListOpenaiConversationsQueryKey,
   getGetOpenaiConversationQueryKey,
   getListOpenaiPromptTemplatesQueryKey,
@@ -26,7 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2, BookmarkPlus, ChevronDown, X, Check, FlaskConical } from "lucide-react";
+import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2, BookmarkPlus, ChevronDown, X, Check, FlaskConical, Pencil } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -43,13 +44,18 @@ function SystemPromptField({
 }) {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const { data: templates } = useListOpenaiPromptTemplates();
   const createTemplate = useCreateOpenaiPromptTemplate();
   const deleteTemplate = useDeleteOpenaiPromptTemplate();
+  const updateTemplate = useUpdateOpenaiPromptTemplate();
 
   const [templatePopoverOpen, setTemplatePopoverOpen] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
+  const [editingTemplate, setEditingTemplate] = useState<OpenaiPromptTemplate | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editContent, setEditContent] = useState("");
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
   const [testError, setTestError] = useState<string | null>(null);
@@ -115,6 +121,41 @@ function SystemPromptField({
     setTemplatePopoverOpen(false);
   };
 
+  const handleOpenEditTemplate = (template: OpenaiPromptTemplate, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTemplate(template);
+    setEditName(template.name);
+    setEditContent(template.content);
+    setSavingTemplate(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTemplate(null);
+    setEditName("");
+    setEditContent("");
+  };
+
+  const handleUpdateTemplate = () => {
+    if (!editingTemplate || !editName.trim() || !editContent.trim()) return;
+    updateTemplate.mutate(
+      { id: editingTemplate.id, data: { name: editName.trim(), content: editContent.trim() } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListOpenaiPromptTemplatesQueryKey() });
+          handleCancelEdit();
+        },
+        onError: (error) => {
+          const description = (error.data as { error?: string } | null)?.error ?? error.message;
+          toast({
+            variant: "destructive",
+            title: "Failed to update template",
+            description,
+          });
+        },
+      }
+    );
+  };
+
   const handleDeleteTemplate = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     deleteTemplate.mutate(
@@ -168,7 +209,7 @@ function SystemPromptField({
               Test
             </Button>
           )}
-        <Popover open={templatePopoverOpen} onOpenChange={(open) => { setTemplatePopoverOpen(open); if (!open) setSavingTemplate(false); }}>
+        <Popover open={templatePopoverOpen} onOpenChange={(open) => { setTemplatePopoverOpen(open); if (!open) { setSavingTemplate(false); handleCancelEdit(); } }}>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
@@ -180,8 +221,52 @@ function SystemPromptField({
               <ChevronDown className="h-3 w-3" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-64 p-0" align="end">
+          <PopoverContent className="w-72 p-0" align="end">
             <div className="p-2">
+              {editingTemplate ? (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-1">Edit Template</p>
+                  <Input
+                    autoFocus
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Template name..."
+                    className="h-7 text-xs"
+                    data-testid="input-edit-template-name"
+                    onKeyDown={(e) => { if (e.key === "Escape") handleCancelEdit(); }}
+                  />
+                  <Textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    placeholder="Template content..."
+                    className="text-xs font-mono h-28 resize-none"
+                    data-testid="input-edit-template-content"
+                    onKeyDown={(e) => { if (e.key === "Escape") handleCancelEdit(); }}
+                  />
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      className="h-6 text-xs flex-1"
+                      onClick={handleUpdateTemplate}
+                      disabled={!editName.trim() || !editContent.trim() || updateTemplate.isPending}
+                      data-testid="btn-confirm-edit-template"
+                    >
+                      {updateTemplate.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Check className="h-3 w-3 mr-1" />}
+                      Save
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-xs"
+                      onClick={handleCancelEdit}
+                      data-testid="btn-cancel-edit-template"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-1">{t("system_prompt")} Templates</p>
               {!templates || templates.length === 0 ? (
                 <p className="text-xs text-muted-foreground px-1 py-2">No templates saved yet.</p>
@@ -195,6 +280,14 @@ function SystemPromptField({
                       data-testid={`template-item-${t.id}`}
                     >
                       <span className="flex-1 text-xs truncate">{t.name}</span>
+                      <button
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-accent text-muted-foreground transition-all"
+                        onClick={(e) => handleOpenEditTemplate(t, e)}
+                        data-testid={`btn-edit-template-${t.id}`}
+                        title="Edit template"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
                       <button
                         className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-all"
                         onClick={(e) => handleDeleteTemplate(t.id, e)}
@@ -256,6 +349,8 @@ function SystemPromptField({
                   </button>
                 )}
               </div>
+                </>
+              )}
             </div>
           </PopoverContent>
         </Popover>

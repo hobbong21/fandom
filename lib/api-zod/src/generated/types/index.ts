@@ -21,3 +21,4 @@ export * from "./openaiModelsResponse";
 export * from "./openaiPromptTemplate";
 export * from "./sendOpenaiMessageBody";
 export * from "./updateOpenaiConversationBody";
+export * from "./updateOpenaiPromptTemplateBody";
