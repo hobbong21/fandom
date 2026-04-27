@@ -27,10 +27,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2, BookmarkPlus, ChevronDown, X, Check, FlaskConical, Pencil } from "lucide-react";
+import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2, BookmarkPlus, ChevronDown, X, Check, FlaskConical, Pencil, ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+
+const MAX_TEST_HISTORY = 5;
+
+interface TestRun {
+  id: number;
+  promptSnippet: string;
+  result: string | null;
+  error: string | null;
+}
 
 function SystemPromptField({
   value,
@@ -58,20 +67,25 @@ function SystemPromptField({
   const [editName, setEditName] = useState("");
   const [editContent, setEditContent] = useState("");
   const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<string | null>(null);
-  const [testError, setTestError] = useState<string | null>(null);
+  const [testHistory, setTestHistory] = useState<TestRun[]>([]);
+  const [viewingIndex, setViewingIndex] = useState<number>(0);
+  const [testRunCounter, setTestRunCounter] = useState(0);
   const [testMessage, setTestMessage] = useState("");
-
-  useEffect(() => {
-    setTestResult(null);
-    setTestError(null);
-  }, [value, model]);
 
   const handleTest = async () => {
     if (!model || !value.trim() || isTesting) return;
     setIsTesting(true);
-    setTestResult("");
-    setTestError(null);
+
+    const snippet = value.trim().slice(0, 40) + (value.trim().length > 40 ? "…" : "");
+    const runId = testRunCounter + 1;
+    setTestRunCounter(runId);
+
+    const newRun: TestRun = { id: runId, promptSnippet: snippet, result: "", error: null };
+    setTestHistory((prev) => {
+      const updated = [newRun, ...prev].slice(0, MAX_TEST_HISTORY);
+      return updated;
+    });
+    setViewingIndex(0);
 
     try {
       const response = await fetch("/api/openai/preview", {
@@ -82,7 +96,9 @@ function SystemPromptField({
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({ error: "Request failed" }));
-        setTestError(err.error ?? "Request failed");
+        setTestHistory((prev) =>
+          prev.map((r) => (r.id === runId ? { ...r, error: err.error ?? "Request failed", result: null } : r))
+        );
         setIsTesting(false);
         return;
       }
@@ -105,14 +121,18 @@ function SystemPromptField({
               const parsed = JSON.parse(line.slice(6));
               if (parsed.content) {
                 fullText += parsed.content;
-                setTestResult(fullText);
+                setTestHistory((prev) =>
+                  prev.map((r) => (r.id === runId ? { ...r, result: fullText } : r))
+                );
               }
             } catch {}
           }
         }
       }
     } catch (err) {
-      setTestError("Something went wrong. Please try again.");
+      setTestHistory((prev) =>
+        prev.map((r) => (r.id === runId ? { ...r, error: "Something went wrong. Please try again.", result: null } : r))
+      );
     } finally {
       setIsTesting(false);
     }
@@ -386,23 +406,64 @@ function SystemPromptField({
           data-testid="input-test-message"
         />
       )}
-      {(testResult !== null || testError !== null || isTesting) && (
-        <div className="rounded-md border border-border bg-secondary/40 p-3 space-y-1" data-testid="test-result-container">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Test response</p>
-          {testError ? (
-            <p className="text-xs text-destructive" data-testid="test-result-error">{testError}</p>
-          ) : (
-            <p className="text-xs text-foreground whitespace-pre-wrap" data-testid="test-result-content">
-              {testResult
-                ? testResult
-                : isTesting
-                  ? <span className="text-muted-foreground">Generating…</span>
-                  : <span className="text-muted-foreground italic">No response received.</span>
-              }
-            </p>
-          )}
-        </div>
-      )}
+      {testHistory.length > 0 && (() => {
+        const viewed = testHistory[viewingIndex];
+        const isCurrentRun = viewingIndex === 0 && isTesting;
+        return (
+          <div className="rounded-md border border-border bg-secondary/40 p-3 space-y-2" data-testid="test-result-container">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Test response</p>
+              {testHistory.length > 1 && (
+                <div className="flex items-center gap-1" data-testid="test-result-nav">
+                  <button
+                    className="p-0.5 rounded hover:bg-accent disabled:opacity-30"
+                    onClick={() => setViewingIndex((i) => Math.min(i + 1, testHistory.length - 1))}
+                    disabled={viewingIndex >= testHistory.length - 1}
+                    title="Older run"
+                    data-testid="btn-test-result-older"
+                  >
+                    <ChevronLeft className="h-3 w-3" />
+                  </button>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">
+                    {viewingIndex === 0 ? "Latest" : `Run −${viewingIndex}`} / {testHistory.length}
+                  </span>
+                  <button
+                    className="p-0.5 rounded hover:bg-accent disabled:opacity-30"
+                    onClick={() => setViewingIndex((i) => Math.max(i - 1, 0))}
+                    disabled={viewingIndex <= 0}
+                    title="Newer run"
+                    data-testid="btn-test-result-newer"
+                  >
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className="text-[10px] text-muted-foreground truncate max-w-full font-mono" data-testid="test-result-prompt-snippet">
+                  Prompt: {viewed.promptSnippet}
+                </p>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs whitespace-pre-wrap break-words text-xs font-mono">
+                {viewed.promptSnippet}
+              </TooltipContent>
+            </Tooltip>
+            {viewed.error ? (
+              <p className="text-xs text-destructive" data-testid="test-result-error">{viewed.error}</p>
+            ) : (
+              <p className="text-xs text-foreground whitespace-pre-wrap" data-testid="test-result-content">
+                {viewed.result
+                  ? viewed.result
+                  : isCurrentRun
+                    ? <span className="text-muted-foreground">Generating…</span>
+                    : <span className="text-muted-foreground italic">No response received.</span>
+                }
+              </p>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
