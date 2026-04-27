@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLanguage } from "@/lib/i18n";
 import {
   useListOpenaiConversations,
+  useListOpenaiModels,
   useCreateOpenaiConversation,
   useUpdateOpenaiConversation,
   useDeleteOpenaiConversation,
@@ -10,6 +11,7 @@ import {
   getGetOpenaiConversationQueryKey,
   type OpenaiConversationWithMessages,
   type OpenaiConversation,
+  type OpenaiModel,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -21,8 +23,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, Plus, ChevronRight, Cpu, Terminal, Settings2, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const MODELS = ["gpt-5-mini", "gpt-5.4", "o4-mini"];
-
 export default function Home() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
@@ -32,17 +32,25 @@ export default function Home() {
 
   // Form states for new conversation
   const [newTitle, setNewTitle] = useState("");
-  const [newModel, setNewModel] = useState(MODELS[1]);
+  const [newModel, setNewModel] = useState<OpenaiModel | "">("");
   const [newSystemPrompt, setNewSystemPrompt] = useState("");
 
   // Form states for editing conversation
   const [editTitle, setEditTitle] = useState("");
-  const [editModel, setEditModel] = useState(MODELS[0]);
+  const [editModel, setEditModel] = useState<OpenaiModel | "">("");
   const [editSystemPrompt, setEditSystemPrompt] = useState("");
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const { data: conversations, isLoading: isLoadingConversations } = useListOpenaiConversations();
+  const { data: modelsData } = useListOpenaiModels();
+  const models = modelsData?.models ?? [];
+
+  useEffect(() => {
+    if (models.length > 0 && !newModel) {
+      setNewModel(models[0]);
+    }
+  }, [models, newModel]);
   const createConversation = useCreateOpenaiConversation();
   const updateConversation = useUpdateOpenaiConversation();
   const deleteConversation = useDeleteOpenaiConversation();
@@ -50,7 +58,7 @@ export default function Home() {
   const openEditDialog = (conv: OpenaiConversation) => {
     setEditingConversation(conv);
     setEditTitle(conv.title);
-    setEditModel(conv.model);
+    setEditModel(conv.model as OpenaiModel);
     setEditSystemPrompt(conv.systemPrompt ?? "");
     setConfirmingDelete(false);
   };
@@ -85,7 +93,7 @@ export default function Home() {
   };
 
   const handleUpdate = async () => {
-    if (!editingConversation || !editTitle) return;
+    if (!editingConversation || !editTitle || !editModel) return;
     updateConversation.mutate(
       { id: editingConversation.id, data: { title: editTitle, model: editModel, systemPrompt: editSystemPrompt.trim() } },
       {
@@ -101,7 +109,7 @@ export default function Home() {
   };
 
   const handleCreate = async () => {
-    if (!newTitle) return;
+    if (!newTitle || !newModel) return;
     
     createConversation.mutate(
       { data: { title: newTitle, model: newModel, systemPrompt: newSystemPrompt } },
@@ -138,12 +146,12 @@ export default function Home() {
             </div>
             <div className="space-y-2">
               <label className="text-xs text-muted-foreground">{t("select_model")}</label>
-              <Select value={editModel} onValueChange={setEditModel}>
+              <Select value={editModel} onValueChange={(v) => setEditModel(v as OpenaiModel)}>
                 <SelectTrigger className="font-mono bg-background" data-testid="select-edit-model">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {MODELS.map((m) => (
+                  {models.map((m) => (
                     <SelectItem key={m} value={m} data-testid={`edit-model-option-${m}`}>{m}</SelectItem>
                   ))}
                 </SelectContent>
@@ -237,12 +245,12 @@ export default function Home() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs text-muted-foreground">{t("select_model")}</label>
-                  <Select value={newModel} onValueChange={setNewModel}>
+                  <Select value={newModel} onValueChange={(v) => setNewModel(v as OpenaiModel)}>
                     <SelectTrigger className="font-mono bg-background" data-testid="select-model">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {MODELS.map(m => (
+                      {models.map(m => (
                         <SelectItem key={m} value={m} data-testid={`model-option-${m}`}>{m}</SelectItem>
                       ))}
                     </SelectContent>
@@ -261,7 +269,7 @@ export default function Home() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsCreating(false)}>{t("cancel")}</Button>
-                <Button onClick={handleCreate} disabled={!newTitle || createConversation.isPending} data-testid="btn-create-chat">
+                <Button onClick={handleCreate} disabled={!newTitle || !newModel || createConversation.isPending} data-testid="btn-create-chat">
                   {createConversation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   {t("create")}
                 </Button>

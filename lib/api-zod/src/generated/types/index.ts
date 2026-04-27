@@ -15,5 +15,7 @@ export * from "./openaiConversation";
 export * from "./openaiConversationWithMessages";
 export * from "./openaiError";
 export * from "./openaiMessage";
+export * from "./openaiModel";
+export * from "./openaiModelsResponse";
 export * from "./sendOpenaiMessageBody";
 export * from "./updateOpenaiConversationBody";

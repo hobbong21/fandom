@@ -7,6 +7,7 @@ import {
   ListOpenaiMessagesParams,
 } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { isValidModel, SUPPORTED_MODELS } from "../../constants/models";
 
 const router = Router();
 
@@ -36,6 +37,13 @@ router.post("/conversations/:id/messages", async (req, res) => {
 
     if (!conversation) {
       res.status(404).json({ error: "Conversation not found" });
+      return;
+    }
+
+    if (!isValidModel(conversation.model)) {
+      res.status(400).json({
+        error: `Unsupported model "${conversation.model}". Supported models: ${SUPPORTED_MODELS.join(", ")}`,
+      });
       return;
     }
 

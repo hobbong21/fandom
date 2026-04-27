@@ -25,6 +25,7 @@ import type {
   OpenaiConversationWithMessages,
   OpenaiError,
   OpenaiMessage,
+  OpenaiModelsResponse,
   SendOpenaiMessageBody,
   UpdateOpenaiConversationBody,
 } from "./api.schemas";
@@ -106,6 +107,82 @@ export function useHealthCheck<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getHealthCheckQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns the canonical list of supported model identifiers
+ * @summary List supported models
+ */
+export const getListOpenaiModelsUrl = () => {
+  return `/api/openai/models`;
+};
+
+export const listOpenaiModels = async (
+  options?: RequestInit,
+): Promise<OpenaiModelsResponse> => {
+  return customFetch<OpenaiModelsResponse>(getListOpenaiModelsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListOpenaiModelsQueryKey = () => {
+  return [`/api/openai/models`] as const;
+};
+
+export const getListOpenaiModelsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listOpenaiModels>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listOpenaiModels>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListOpenaiModelsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listOpenaiModels>>
+  > = ({ signal }) => listOpenaiModels({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listOpenaiModels>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListOpenaiModelsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listOpenaiModels>>
+>;
+export type ListOpenaiModelsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List supported models
+ */
+
+export function useListOpenaiModels<
+  TData = Awaited<ReturnType<typeof listOpenaiModels>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listOpenaiModels>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListOpenaiModelsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

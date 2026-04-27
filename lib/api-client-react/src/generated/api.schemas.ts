@@ -25,15 +25,27 @@ export interface OpenaiMessage {
   createdAt: string;
 }
 
+export type OpenaiModel = (typeof OpenaiModel)[keyof typeof OpenaiModel];
+
+export const OpenaiModel = {
+  "gpt-4o-mini": "gpt-4o-mini",
+  "gpt-4o": "gpt-4o",
+  "o3-mini": "o3-mini",
+} as const;
+
+export interface OpenaiModelsResponse {
+  models: OpenaiModel[];
+}
+
 export interface CreateOpenaiConversationBody {
   title: string;
-  model?: string;
+  model?: OpenaiModel;
   systemPrompt?: string;
 }
 
 export interface UpdateOpenaiConversationBody {
   title?: string;
-  model?: string;
+  model?: OpenaiModel;
   systemPrompt?: string;
 }
 

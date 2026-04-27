@@ -16,6 +16,14 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
+ * Returns the canonical list of supported model identifiers
+ * @summary List supported models
+ */
+export const ListOpenaiModelsResponse = zod.object({
+  models: zod.array(zod.enum(["gpt-4o-mini", "gpt-4o", "o3-mini"])),
+});
+
+/**
  * @summary List all conversations
  */
 export const ListOpenaiConversationsResponseItem = zod.object({
@@ -34,7 +42,7 @@ export const ListOpenaiConversationsResponse = zod.array(
  */
 export const CreateOpenaiConversationBody = zod.object({
   title: zod.string(),
-  model: zod.string().optional(),
+  model: zod.enum(["gpt-4o-mini", "gpt-4o", "o3-mini"]).optional(),
   systemPrompt: zod.string().optional(),
 });
 
@@ -71,7 +79,7 @@ export const UpdateOpenaiConversationParams = zod.object({
 
 export const UpdateOpenaiConversationBody = zod.object({
   title: zod.string().optional(),
-  model: zod.string().optional(),
+  model: zod.enum(["gpt-4o-mini", "gpt-4o", "o3-mini"]).optional(),
   systemPrompt: zod.string().optional(),
 });
 

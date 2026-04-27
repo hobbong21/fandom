@@ -5,9 +5,10 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OpenaiModel } from "./openaiModel";
 
 export interface UpdateOpenaiConversationBody {
   title?: string;
-  model?: string;
+  model?: OpenaiModel;
   systemPrompt?: string;
 }

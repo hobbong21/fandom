@@ -7,8 +7,6 @@
  */
 import type { OpenaiModel } from "./openaiModel";
 
-export interface CreateOpenaiConversationBody {
-  title: string;
-  model?: OpenaiModel;
-  systemPrompt?: string;
+export interface OpenaiModelsResponse {
+  models: OpenaiModel[];
 }
