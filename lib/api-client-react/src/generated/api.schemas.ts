@@ -9,10 +9,18 @@ export interface HealthStatus {
   status: string;
 }
 
+export type OpenaiModel = (typeof OpenaiModel)[keyof typeof OpenaiModel];
+
+export const OpenaiModel = {
+  "gpt-4o-mini": "gpt-4o-mini",
+  "gpt-4o": "gpt-4o",
+  "o3-mini": "o3-mini",
+} as const;
+
 export interface OpenaiConversation {
   id: number;
   title: string;
-  model: string;
+  model: OpenaiModel;
   systemPrompt?: string;
   createdAt: string;
   messageCount?: number;
@@ -25,14 +33,6 @@ export interface OpenaiMessage {
   content: string;
   createdAt: string;
 }
-
-export type OpenaiModel = (typeof OpenaiModel)[keyof typeof OpenaiModel];
-
-export const OpenaiModel = {
-  "gpt-4o-mini": "gpt-4o-mini",
-  "gpt-4o": "gpt-4o",
-  "o3-mini": "o3-mini",
-} as const;
 
 export interface OpenaiModelsResponse {
   models: OpenaiModel[];
@@ -57,7 +57,7 @@ export interface SendOpenaiMessageBody {
 export interface OpenaiConversationWithMessages {
   id: number;
   title: string;
-  model: string;
+  model: OpenaiModel;
   systemPrompt?: string;
   createdAt: string;
   messages: OpenaiMessage[];

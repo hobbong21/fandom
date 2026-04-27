@@ -6,11 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OpenaiMessage } from "./openaiMessage";
+import type { OpenaiModel } from "./openaiModel";
 
 export interface OpenaiConversationWithMessages {
   id: number;
   title: string;
-  model: string;
+  model: OpenaiModel;
   systemPrompt?: string;
   createdAt: Date;
   messages: OpenaiMessage[];

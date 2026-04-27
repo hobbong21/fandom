@@ -29,7 +29,7 @@ export const ListOpenaiModelsResponse = zod.object({
 export const ListOpenaiConversationsResponseItem = zod.object({
   id: zod.number(),
   title: zod.string(),
-  model: zod.string(),
+  model: zod.enum(["gpt-4o-mini", "gpt-4o", "o3-mini"]),
   systemPrompt: zod.string().optional(),
   createdAt: zod.coerce.date(),
   messageCount: zod.number().optional(),
@@ -57,7 +57,7 @@ export const GetOpenaiConversationParams = zod.object({
 export const GetOpenaiConversationResponse = zod.object({
   id: zod.number(),
   title: zod.string(),
-  model: zod.string(),
+  model: zod.enum(["gpt-4o-mini", "gpt-4o", "o3-mini"]),
   systemPrompt: zod.string().optional(),
   createdAt: zod.coerce.date(),
   messages: zod.array(
@@ -87,7 +87,7 @@ export const UpdateOpenaiConversationBody = zod.object({
 export const UpdateOpenaiConversationResponse = zod.object({
   id: zod.number(),
   title: zod.string(),
-  model: zod.string(),
+  model: zod.enum(["gpt-4o-mini", "gpt-4o", "o3-mini"]),
   systemPrompt: zod.string().optional(),
   createdAt: zod.coerce.date(),
   messageCount: zod.number().optional(),

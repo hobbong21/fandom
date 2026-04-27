@@ -269,7 +269,7 @@ components:
         title:
           type: string
         model:
-          type: string
+          $ref: "#/components/schemas/OpenaiModel"
         systemPrompt:
           type: string
         createdAt:
@@ -349,7 +349,7 @@ components:
         title:
           type: string
         model:
-          type: string
+          $ref: "#/components/schemas/OpenaiModel"
         systemPrompt:
           type: string
         createdAt:

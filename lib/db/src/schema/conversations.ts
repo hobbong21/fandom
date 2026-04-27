@@ -5,7 +5,7 @@ import { z } from "zod/v4";
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  model: text("model").notNull().default("gpt-5-mini"),
+  model: text("model").notNull().default("gpt-4o-mini"),
   systemPrompt: text("system_prompt"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
