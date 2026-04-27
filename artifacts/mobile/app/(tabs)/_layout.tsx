@@ -465,6 +465,15 @@ function ClassicTabLayout() {
           title: t.notifications,
           headerShown: false,
           tabBarButton: () => null,
+          tabBarItemStyle: { display: "none", width: 0 },
+        }}
+      />
+      <Tabs.Screen
+        name="store"
+        options={{
+          headerShown: false,
+          tabBarButton: () => null,
+          tabBarItemStyle: { display: "none", width: 0 },
         }}
       />
       <Tabs.Screen
