@@ -429,7 +429,7 @@ export default function HomeScreen() {
             }}>
               <View>
                 <Text style={{ fontSize: 22, fontWeight: "800", color: colors.foreground, letterSpacing: -0.5 }}>
-                  {user ? `안녕하세요, ${user.name}님 👋` : "스타링에 오신 것을 환영해요"}
+                  {user ? `안녕하세요, ${user.name}님 👋` : "팬노드에 오신 것을 환영해요"}
                 </Text>
                 <Text style={{ fontSize: 13, color: colors.mutedForeground, marginTop: 3 }}>
                   아티스트의 새 소식을 확인해보세요

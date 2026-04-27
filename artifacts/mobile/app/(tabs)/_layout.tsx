@@ -339,10 +339,10 @@ function WebRightPanel() {
       {/* App info footer */}
       <View style={{ paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border }}>
         <Text style={{ fontSize: 11, color: colors.mutedForeground, lineHeight: 18 }}>
-          스타링 · 아티스트와 팬이 직접 소통하는 공간
+          팬노드 · 스타를 사랑하는 팬들의 연결 공간
         </Text>
         <Text style={{ fontSize: 10, color: colors.mutedForeground + "88", marginTop: 4 }}>
-          © 2025 Starling
+          © 2025 FanNode
         </Text>
       </View>
     </ScrollView>

@@ -42,19 +42,10 @@ function RootLayoutNav() {
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>
-        {!isAuthenticated ? (
-          <>
-            <Stack.Screen name="login" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" redirect />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="fandom/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="post/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="login" redirect />
-          </>
-        )}
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="fandom/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="post/[id]" options={{ headerShown: false }} />
       </Stack>
 
       {!isAuthenticated && <Redirect href="/login" />}
