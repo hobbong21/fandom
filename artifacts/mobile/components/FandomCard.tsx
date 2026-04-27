@@ -179,7 +179,7 @@ export function FandomCard({ fandom, variant = "default" }: FandomCardProps) {
               fontWeight: "700",
               color: isFollowing ? colors.mutedForeground : "#ffffff",
             }}>
-              {isFollowing ? "✓ " + t.followingBtn : t.followArtist ?? t.joinBtn}
+              {isFollowing ? "✓ " + t.followingBtn : t.followArtist}
             </Text>
           </Pressable>
         </View>

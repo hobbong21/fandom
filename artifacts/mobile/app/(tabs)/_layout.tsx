@@ -51,7 +51,7 @@ type NavItem = { name: string; icon: string; label: string; badge?: number };
 
 function WebSidebar({ navItems }: { navItems: NavItem[] }) {
   const colors = useColors();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const { totalXP } = useXP();
   const pathname = usePathname();
@@ -89,13 +89,13 @@ function WebSidebar({ navItems }: { navItems: NavItem[] }) {
               </Text>
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={[styles.userCardName, { color: colors.foreground }]} numberOfLines={1}>
+              <Text style={[styles.userCard_name, { color: colors.foreground }]} numberOfLines={1}>
                 {user.name}
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                 <Text style={{ fontSize: 11 }}>{tierInfo.emoji}</Text>
                 <Text style={{ fontSize: 11, color: tierInfo.color, fontWeight: "600" }}>
-                  {tierInfo.name}
+                  {tierInfo.label[language]}
                 </Text>
                 <Text style={{ fontSize: 11, color: colors.mutedForeground }}>
                   · {totalXP.toLocaleString()} XP
@@ -121,7 +121,7 @@ function WebSidebar({ navItems }: { navItems: NavItem[] }) {
                     ? { backgroundColor: colors.primary + "15" }
                     : {},
                 ]}
-                onPress={() => router.push(item.name === "index" ? "/" : `/${item.name}`)}
+                onPress={() => router.push((item.name === "index" ? "/" : `/${item.name}`) as any)}
               >
                 <View style={[styles.navIconWrap, {
                   width: 36,
@@ -520,6 +520,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 14,
     borderWidth: 1,
+  },
+  userCard_name: {
+    fontSize: 13,
+    fontWeight: "700",
   },
   userAvatar: {
     width: 38,
