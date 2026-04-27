@@ -20,7 +20,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function HistoryPage() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
-  const { data: conversations, isLoading } = useListOpenaiConversations();
+  const { data: conversations, isLoading } = useListOpenaiConversations({
+    query: { refetchInterval: 30_000, refetchIntervalInBackground: true },
+  });
   const deleteConversation = useDeleteOpenaiConversation();
 
   const handleDelete = (id: number) => {

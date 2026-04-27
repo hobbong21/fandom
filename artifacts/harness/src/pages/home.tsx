@@ -499,7 +499,9 @@ export default function Home() {
     setDrafts((prev) => ({ ...prev, [selectedId]: val }));
   };
 
-  const { data: conversations, isLoading: isLoadingConversations } = useListOpenaiConversations();
+  const { data: conversations, isLoading: isLoadingConversations } = useListOpenaiConversations({
+    query: { refetchInterval: 30_000, refetchIntervalInBackground: true },
+  });
   const { data: modelsData } = useListOpenaiModels();
   const models = modelsData?.models ?? [];
 
