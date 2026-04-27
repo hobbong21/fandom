@@ -11,7 +11,7 @@ version = "1.0.0"
 [[services]]
 name = "web"
 paths = [ "/ai-harness/" ]
-localPort = 8081
+localPort = 8000
 
 [services.development]
 run = "pnpm --filter @workspace/harness run dev"
