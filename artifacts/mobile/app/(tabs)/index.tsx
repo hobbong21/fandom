@@ -20,6 +20,62 @@ import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 const WEB_MAX_WIDTH = 680;
 
+function GreetingCard({ userName, colors }: { userName: string; colors: any }) {
+  const today = new Date();
+  const days = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+  const dayStr = `${today.getMonth() + 1}월 ${today.getDate()}일 ${days[today.getDay()]}`;
+  return (
+    <View style={{
+      borderRadius: 20, marginBottom: 16, overflow: "hidden",
+      backgroundColor: colors.primary,
+      shadowColor: colors.primary, shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.35, shadowRadius: 16, elevation: 8,
+    }}>
+      {/* Background decoration */}
+      <View style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: 60, backgroundColor: "rgba(255,255,255,0.1)" }} />
+      <View style={{ position: "absolute", bottom: -20, right: 40, width: 80, height: 80, borderRadius: 40, backgroundColor: "rgba(255,255,255,0.07)" }} />
+      <View style={{ padding: 18 }}>
+        <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", fontWeight: "600", letterSpacing: 0.4, marginBottom: 5 }}>
+          🌹 오늘의 응원 · {dayStr}
+        </Text>
+        <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff", letterSpacing: -0.3 }}>
+          {userName}님, 오늘도 함께해요
+        </Text>
+        <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: 4 }}>
+          좋아하는 아티스트의 새 소식이 기다리고 있어요
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function QuickActions({ colors }: { colors: any }) {
+  const actions = [
+    { emoji: "💬", label: "대화방" },
+    { emoji: "🎁", label: "선물" },
+    { emoji: "🏆", label: "랭킹" },
+    { emoji: "🛒", label: "상점" },
+  ];
+  return (
+    <View style={{ flexDirection: "row", gap: 10, marginBottom: 20 }}>
+      {actions.map((a) => (
+        <Pressable
+          key={a.label}
+          style={({ pressed }) => ({
+            flex: 1, alignItems: "center", gap: 7, paddingVertical: 14,
+            backgroundColor: pressed ? colors.muted + "cc" : colors.card,
+            borderRadius: 16, borderWidth: 1, borderColor: colors.border,
+          })}
+          onPress={() => {}}
+        >
+          <Text style={{ fontSize: 22 }}>{a.emoji}</Text>
+          <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedForeground }}>{a.label}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 function LiveBanner({ colors }: { colors: any }) {
   return (
     <Pressable
@@ -130,6 +186,8 @@ export default function HomeScreen() {
   /* ── Shared content block ── */
   const feedContent = (
     <>
+      {user && <GreetingCard userName={user.name} colors={colors} />}
+      <QuickActions colors={colors} />
       <LiveBanner colors={colors} />
 
       {followedArtists.length > 0 && (
@@ -297,6 +355,8 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 100 }}
         ListHeaderComponent={
           <View style={{ paddingTop: 16 }}>
+            {user && <GreetingCard userName={user.name} colors={colors} />}
+            <QuickActions colors={colors} />
             <LiveBanner colors={colors} />
 
             {followedArtists.length > 0 && (
